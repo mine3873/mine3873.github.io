@@ -1,5 +1,5 @@
 title: 이승준
-description: "Satellite - jekyll blog theme"
+description: "이승준의 개발 블로그"
 logo_img: "/assets/img/favicon.webp"
 profile_img: "/assets/img/MyFace.jpg"
 
@@ -8,8 +8,8 @@ email: bj20020911@gmail.com
 github_username: mine3873
 # twitter_username: mine3873
 instagram_username: instagram
-linkedin_username: linkedin
-facebook_username: facebook
+#linkedin_username: linkedin
+#facebook_username: facebook
 
 # External API
 giscus_repo: "byanko55/jekyll-theme-satellite"
