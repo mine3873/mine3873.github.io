@@ -1,3 +1,8 @@
+---
+title: "Example Post: no thumbnail image"
+date: "2023-12-01"
+---
+
 # File and File System Concept
 ## Racall : [Address Mapping - Logical Blocks](Chapter%2011%20Mass-Storage%20Structure.md#Address%20Mapping%20-%20Logical%20Blocks)
 ## File Concept
