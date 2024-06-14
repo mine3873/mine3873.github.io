@@ -4,7 +4,7 @@ tags:
     - project
     - design
 date: "2024-06-15"
-thumbnail : "https://github.com/mine3873/mine3873.github.io/raw/master/assets/img/thumbnail/book.jpg"
+thumbnail: "https://github.com/mine3873/mine3873.github.io/raw/master/assets/img/thumbnail/book.jpg"
 ---
 
 # 게임 내용
