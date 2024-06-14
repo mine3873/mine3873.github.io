@@ -14,6 +14,7 @@ thumbnail : "https://github.com/mine3873/mine3873.github.io/raw/master/assets/im
 
 # 해야할 것
 ---
+
 ## 블렌더 
 --- 
 블렌더를 통해 모델링을 공부.  
