@@ -22,4 +22,4 @@ date: "2024-06-14"
 
 ## EXE 파일
 ---
-[KayokoChatBot](https://github.com/mine3873/mine3873.github.io/tree/master/projectFile/KayokoChatBot/kayoko.exe)
+[KayokoChatBot.exe](https://github.com/mine3873/mine3873.github.io/raw/master/projectFile/KayokoChatBot/kayoko.exe)
