@@ -3,8 +3,8 @@ title: "Blue Archive FPS 게임"
 tags:
     - project
     - design
-date: "2024-06-15"
-thumbnail: "https://github.com/mine3873/mine3873.github.io/raw/master/assets/img/thumbnail/book.jpg"
+date: "2024-06-14"
+#thumbnail: "https://github.com/mine3873/mine3873.github.io/raw/master/assets/img/thumbnail/book.jpg"
 published: true
 ---
 
