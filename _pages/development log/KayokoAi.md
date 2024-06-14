@@ -9,7 +9,7 @@ date: "2024-06-14"
 # Kayoko AI with ChatGPT
 ---
 ## about this 
-![exampleThisApp](https://github.com/mine3873/mine3873.github.io/blob/master/assets/img/pages/kayoko_ChatBot_example.png)
+![exampleThisApp](https://github.com/mine3873/mine3873.github.io/raw/master/assets/img/pages/kayoko_ChatBot_example.png)
 
 프로그램에서 입력 받은 텍스트를 ChatGpt로 보내 질문에 대한 답변을 출력하는 프로그램 
 
