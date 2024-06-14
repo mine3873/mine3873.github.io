@@ -1,12 +1,12 @@
-title: myblog.com
+title: 이승준
 description: "Satellite - jekyll blog theme"
 logo_img: "/assets/img/favicon.webp"
-profile_img: "/assets/img/profile.webp"
+profile_img: "/assets/img/MyFace.jpg"
 
 # Social Links
 email: bj20020911@gmail.com
 github_username: mine3873
-twitter_username: mine3873
+# twitter_username: mine3873
 instagram_username: instagram
 linkedin_username: linkedin
 facebook_username: facebook
