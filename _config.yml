@@ -13,14 +13,14 @@ instagram_username: instagram
 
 # External API
 
-#giscus_repo: "byanko55/jekyll-theme-satellite"
-#giscus_repoId: "R_kgDOJ6fqWg"
-#giscus_category: "Q&A"
-#giscus_categoryId: "DIC_kwDOJ6fqWs4Cc7p7"
-giscus_repo: "mine3873/mine3873.github.io"
-giscus_repoId: "R_kgDOMI_1_g"
+giscus_repo: "byanko55/jekyll-theme-satellite"
+giscus_repoId: "R_kgDOJ6fqWg"
 giscus_category: "Q&A"
-giscus_categoryId: "DIC_kwDOMI_1_s4CgE9X"
+giscus_categoryId: "DIC_kwDOJ6fqWs4Cc7p7"
+#giscus_repo: "mine3873/mine3873.github.io"
+#giscus_repoId: "R_kgDOMI_1_g"
+#giscus_category: "Q&A"
+#giscus_categoryId: "DIC_kwDOMI_1_s4CgE9X"
 goatcounter_code: byanko77
 google_analytics:
 
