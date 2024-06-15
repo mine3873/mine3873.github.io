@@ -16,7 +16,7 @@ date: "2024-06-15"
 ## 준비
 ---
 먼저 학습에 사용하기 위한 오디오 파일들을 준비할 것임.
-![FIleList](https://1drv.ms/i/s!AmtfKlFp1biegfwqVK_Id8LDTasPug?embed=1&width=998&height=1190)
+![FIleList](https://onedrive.live.com/embed?resid=9EB8D569512A5F6B%2132298&authkey=%21AFSvyHfCw02rD7o&width=998&height=1190)
 
 데이터 처리하기 편하도록 이름을 voiceFile로 통합하여 저장하였다.
 
