@@ -75,4 +75,7 @@ https://github.com/coqui-ai/TTS
 coqui 의 kokoro 라는 모델을 통해서 파인 튜닝을 진행하고 있다.  
 시작한지 10분 채 되지 않았는데, 다음과 같은 결과가 나오고 있다.
 
-![Sample Audio](https://github.com/mine3873/mine3873.github.io/raw/master/assets/wav/testAudio.wav)
+<audio controls>
+  <source src="https://github.com/mine3873/mine3873.github.io/blob/master/assets/wav/testAudio.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
