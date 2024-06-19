@@ -69,3 +69,10 @@ chatGpt의 도움이 없었다면 큰일날 뻔 했다.
 https://github.com/coqui-ai/TTS
 바로 coqui TTS의 기존에 학습된 모델에 파인 튜닝을 통해서 카요코의 목소리로 나타내기로 했다.  
 내일 다시 오도록 하겠다...
+
+# 2024-06-18
+---
+coqui 의 kokoro 라는 모델을 통해서 파인 튜닝을 진행하고 있다.  
+시작한지 10분 채 되지 않았는데, 다음과 같은 결과가 나오고 있다.
+
+![Sample Audio](https://github.com/mine3873/mine3873.github.io/raw/master/assets/wav/testAudio.wav)
