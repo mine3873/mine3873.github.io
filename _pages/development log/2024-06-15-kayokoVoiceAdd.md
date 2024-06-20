@@ -297,5 +297,9 @@ if __name__ == "__main__":
 <audio controls>
   <source src="https://github.com/mine3873/mine3873.github.io/raw/master/assets/wav/individualAudio.wav" type="audio/wav">
   Your browser does not support the audio element.
+</audio>  
+<audio controls>
+  <source src="https://github.com/mine3873/mine3873.github.io/raw/master/assets/wav/individualAudio_1.wav" type="audio/wav">
+  Your browser does not support the audio element.
 </audio>
 
