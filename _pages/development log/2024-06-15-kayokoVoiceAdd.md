@@ -293,7 +293,7 @@ if __name__ == "__main__":
 
 ```
 
-다음 오디오는 모델 평가 과정에서 생성된 음성이다. 
+다음 오디오는 모델 평가 과정에서 생성된 음성이다.  
 <audio controls>
   <source src="https://github.com/mine3873/mine3873.github.io/raw/master/assets/wav/individualAudio.wav" type="audio/wav">
   Your browser does not support the audio element.
