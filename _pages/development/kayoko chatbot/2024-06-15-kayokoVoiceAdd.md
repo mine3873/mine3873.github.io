@@ -2,6 +2,7 @@
 title: "Kayoko AI with ChatGpt (2)"
 tags:
     - project
+    - kayoko
 date: "2024-06-15"
 
 ---
