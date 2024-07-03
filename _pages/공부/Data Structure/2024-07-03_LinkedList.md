@@ -5,7 +5,7 @@ tags:
 date: "2024-07-03"
 thumbnail: "https://github.com/mine3873/mine3873.github.io/raw/master/assets/img/thumbnail/book.jpg"
 ---
- 
+블렌더 모델링 너무 힘들어서 머리 좀 식히고자 작성합니다..  
 
 # Linked List
 ---
