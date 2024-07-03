@@ -3,7 +3,7 @@ title: "연결 리스트"
 tags:
     - Data Structure
 date: "2024-07-03"
-
+thumbnail: "https://github.com/mine3873/mine3873.github.io/raw/master/assets/img/thumbnail/book.jpg"
 ---
  
 
