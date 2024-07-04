@@ -5,7 +5,7 @@ tags:
 date: "2024-07-03"
 thumbnail: "https://github.com/mine3873/mine3873.github.io/raw/master/assets/img/thumbnail/book.jpg"
 ---
-블렌더 모델링 너무 힘들어서 머리 좀 식히고자 작성합니다..  
+블렌더 모델링 너무 힘들어서 머리 좀 식히고자 복습할 겸 작성합니다..  
 <span style="color:red">
 </span>
 # Linked List
@@ -27,10 +27,10 @@ Singly Linked List는 단순히 각 노드가 다음 노드의 포인터만을 �
 ### code
 ---
 ``` cpp
-##include<iostream>
-##include<ostream>
+#include<iostream>
+#include<ostream>
 
-##define MAX 10
+#define MAX 10
 
 using namespace std;
 
@@ -172,10 +172,10 @@ Doubly Linked List는 각 노드가 다음 노드의 포인터와 이전 노드�
 ### code
 ---
 ``` cpp
-##include<iostream>
-##include<ostream>
+#include<iostream>
+#include<ostream>
 
-##define MAX 10
+#define MAX 10
 
 using namespace std;
 
