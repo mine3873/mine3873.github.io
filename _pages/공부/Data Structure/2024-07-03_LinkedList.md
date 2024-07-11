@@ -11,7 +11,7 @@ thumbnail: "https://github.com/mine3873/mine3873.github.io/raw/master/assets/img
 # Linked List
 ---
 ![1](https://onedrive.live.com/embed?resid=9EB8D569512A5F6B%2132369&authkey=%21AOqQbwuKTHaFKBA&width=2157&height=1668)
-<span style="color:orange">연결리스트</span>는 각 노드가 연속되어 저장되는 배열과 달리, 각 노드들의 위치가 연속되지 않지만, 각자 다음 노드의 위치 정보를 함께 저장하여 연결되는 자료구조이다.  
+<span style="color:orange">연결리스트</span>는 각 노드가 연속되어 저장되는 배열과 달리, 각 노드들의 위치가 연속되지 않지만, 각자 다음 노드의 위치 정보를 함께 저장하여 연결되는 자료구조입니다.  
 
 <span style="color:orange">각 노드는 데이터와 다른 노드에 대한 포인터가 저장된다.</span>  
 
