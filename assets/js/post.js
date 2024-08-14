@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
             if (!subList){
                 subList = document.createElement("ol");
-                subList.classList.add("toc-list-list");
+                subList.classList.add("toc-list");
                 prevHead.append(subList);
             }
 
