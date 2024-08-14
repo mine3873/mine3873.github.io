@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function(){
             }
 
             subList.append(tocItem);
-            //prevHead = tocItem;
+            prevHead = tocItem;
         }
         else{
             itemLink.classList.add("node-name--H3");
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
             if (!subList){
                 subList = document.createElement("ol");
-                subList.classList.add("toc-list");
+                subList.classList.add("toc-list-list");
                 prevHead.append(subList);
             }
 
