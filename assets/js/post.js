@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let currentTheme = localStorage.getItem('theme');
 
     // tocbot
-    var headings = innerContent.querySelectorAll('h1, h2');
+    var headings = innerContent.querySelectorAll('h1, h2, h3');
     var prevHead;
 
     const tocBorad = document.querySelector(".toc-board");
