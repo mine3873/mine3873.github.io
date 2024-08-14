@@ -30,6 +30,24 @@ document.addEventListener('DOMContentLoaded', function(){
             prevHead = tocItem;
             tocBorad.append(tocItem);
         }
+        else if(heading.tagName == 'H3') {
+            itemLink.classList.add("node-name--H2");
+
+            if (prevHead == undefined) {
+                tocBorad.append(tocItem);
+                return;
+            }
+
+            let subList = prevHead.querySelector('ol');
+
+            if (!subList){
+                subList = document.createElement("ol");
+                subList.classList.add("toc-list");
+                prevHead.append(subList);
+            }
+
+            subList.append(tocItem);
+        }
         else {
             itemLink.classList.add("node-name--H2");
 
