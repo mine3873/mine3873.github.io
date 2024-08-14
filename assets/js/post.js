@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let currentTheme = localStorage.getItem('theme');
 
     // tocbot
-    var headings = innerContent.querySelectorAll('h1, h2');
+    var headings = innerContent.querySelectorAll('h1, h2, h3');
     var prevHead;
 
     const tocBorad = document.querySelector(".toc-board");
@@ -30,8 +30,27 @@ document.addEventListener('DOMContentLoaded', function(){
             prevHead = tocItem;
             tocBorad.append(tocItem);
         }
-        else {
+        else if(heading.tagName == 'H2'){
             itemLink.classList.add("node-name--H2");
+
+            if (prevHead == undefined) {
+                tocBorad.append(tocItem);
+                return;
+            }
+
+            let subList = prevHead.querySelector('ol');
+
+            if (!subList){
+                subList = document.createElement("ol");
+                subList.classList.add("toc-list");
+                prevHead.append(subList);
+            }
+
+            subList.append(tocItem);
+            prevHead = tocItem;
+        }
+        else{
+            itemLink.classList.add("node-name--H3");
 
             if (prevHead == undefined) {
                 tocBorad.append(tocItem);
