@@ -40,7 +40,7 @@
                                 {%- if sub_page_tree.size > 3 -%}
                                     <a href="{{ '/' | append: sub_page_tree[1] | '/' | append: sub_page_tree[2]  | prepend: site.baseurl }}" class="category">{{ sub_page_tree[2] }}</a>
                                 {% else %} 
-                                    <a href="{{ '/' | append: sub_page_tree[2] | prepend: site.baseurl }}" class="category">{{ sub_page_tree[2] }}</a>
+                                    <a href="{{ '/' | append: sub_page_tree[1] | prepend: site.baseurl }}" class="category">{{ sub_page_tree[1] }}</a>
                                 {% endif %}
                             {% else %}
                                 <span class="category">None</span>
