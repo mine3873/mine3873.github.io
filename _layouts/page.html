@@ -9,7 +9,11 @@
         {%- assign page_type = "post" -%}
     {% endif %}
     <head>
+
         {% include head.html %}
+        {% if page.use_math %}
+            {% include mathjax_support.html %}
+        {% endif %}
         <link rel="preload" href="{{ site.profile_img | prepend: site.baseurl }}" as="image">
         <link rel="stylesheet" href="{{ '/assets/css/style.css' | prepend: site.baseurl }}">
         {% if page_type == "post" %}
