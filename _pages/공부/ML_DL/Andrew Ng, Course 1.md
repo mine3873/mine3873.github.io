@@ -37,11 +37,13 @@ learns from being given *right answers*
 	Compresss data using fewer numbers
 
 # Regression Model
+{% if page.mermaid %}
 ``` mermaid
 graph LR
 A("training set") --> B("learning algorithm")
 B --> C("f : hypothesis")
 ```
+{% endif %}
 $$
 \text{$x$ : input} \rightarrow \text{$f$ : model} \rightarrow \text{$\widehat{y}$ : predicted output }
 $$
