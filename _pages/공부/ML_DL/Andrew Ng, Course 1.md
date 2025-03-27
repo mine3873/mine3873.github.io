@@ -1,13 +1,12 @@
 ---
-title: "Andrew_NG ML (1)"
-date: "2025-03-27"
+title: "Andrew_Ng ML (1)"
 use_math: true
+date: "2025-03-27"
 thumbnail: "https://github.com/mine3873/mine3873.github.io/raw/master/assets/img/thumbnail/book.jpg"
 tags:
   - 머신러닝
-  - "#Andrew_Ng"
+  - "Andrew_Ng"
 ---
-
 # 머신러닝이란? 
 - `머신러닝 (machine learnig)` 
 	Field of study that gives computers the ability to learn without being explicitly programmed.
@@ -38,14 +37,11 @@ learns from being given *right answers*
 	Compresss data using fewer numbers
 
 # Regression Model
-{% if page.mermaid %}
 ``` mermaid
 graph LR
 A("training set") --> B("learning algorithm")
 B --> C("f : hypothesis")
 ```
-{% endif %}
-
 $$
 \text{$x$ : input} \rightarrow \text{$f$ : model} \rightarrow \text{$\widehat{y}$ : predicted output }
 $$
@@ -103,7 +99,7 @@ $$
 &= \frac{1}{m}\Sigma_{i=1}^m (wx^{(i)} + b - y^{(i)}) \times 2x_{i}  \\
 \end{align}
 $$
-기존 Cost Function 에서 선택적으로 $\frac{1}{2}$를 곱하기도 했는데, 그 경우, 계산된 도함수 값은 다음과 같다.
+기존 [[Andrew Ng, Course 1#Cost Function|Cost Function]] 에서 선택적으로 $\frac{1}{2}$를 곱하기도 했는데, 그 경우, 계산된 도함수 값은 다음과 같다.
 $$
 \begin{align}
 &= \frac{1}{2} \frac{1}{m}\Sigma_{i=1}^m (wx^{(i)} + b - y^{(i)}) \times 2x^{(i)}  \\
@@ -118,10 +114,9 @@ $$
 &= \frac{d}{db} \frac{1}{m} \Sigma_{i=1}^m(wx^{(i)} + b - y^{(i)})^2  \\
 &= \frac{1}{m} \Sigma_{i=1}^m(wx^{(i)} + b - y^{(i)}) \times 2
 \end{align}
+
 $$
-
 마찬가지로, 선택적으로 $\frac{1}{2}$를 곱한 경우, 최종 값은 다음과 같다.
-
 $$
 \begin{align}
 &= \frac{1}{m} \Sigma_{i=1}^m(f_{w,b}(x^{(i)}) - y^{(i)})
@@ -155,7 +150,7 @@ $$
 - $\vec{x}^{(i)}$ : features of $i^{th}$ training example 
 	$\vec{x}^{(i)} = \{ x_{1}^{(i)}, x_{2}^{(i)}, \cdots , x_{n}^{(i)}\}$
 
-> [[#Vectorization|벡터 참고 부록]]
+> [[Andrew Ng, Course 1#Vectorization|벡터 참고 부록]]
 
 ### model 
 $$
@@ -274,7 +269,7 @@ f = np.dot(w,x) + b
 이는 컴퓨터 병렬 하드웨어를 사용하므로, 위와 같은 일반적인 코드보다 더 빠른 처리가 가능하다.
 
 # Classification 
-[[#Regression Model#선형 회귀]] 방식에서의 입력값에 대한 출력값 예측이 아닌, 데이터를 여러 그룹 (class) 로 나누어, 입력값에 대해서 어느 그룹에 속하는지 판단하는 모델
+[[Andrew Ng, Course 1#Regression Model#선형 회귀]] 방식에서의 입력값에 대한 출력값 예측이 아닌, 데이터를 여러 그룹 (class) 로 나누어, 입력값에 대해서 어느 그룹에 속하는지 판단하는 모델
 
 `binary classification` : number of classes or groups, categories is just two 
 
@@ -300,6 +295,7 @@ L(f_{\vec{w},b}(\vec{x}^{(i)}), y^{(i)}) = \begin{cases}
  \\
 J(\vec{w},b) = \frac{1}{m}\Sigma_{i=1}^m L(f_{\vec{w},b}(\vec{x}^{(i)}), y^{(i)})
 \end{align}
+
 $$
 
 
@@ -323,17 +319,16 @@ $$
 \end{align}
 $$
 이는 다음과 같이 나타낼 수 있다. 
-
 $$
 \begin{align}
 &\text{repeat \{ } \\
 &\ \ \ \ \ \ \ \ w_{j} = w_{j} - \alpha  [\frac{1}{m}\Sigma_{i=1}^m(f_{\vec{w},b}(\vec{x}^{(i)}) - y^{(i)})x_j^{(i)}]\\
 &\ \ \ \ \ \ \ \ b = b - \alpha  [\frac{1}{m}\Sigma_{i=1}^m(f_{\vec{w},b}(\vec{x}^{(i)}) - y^{(i)})] \\
 &\text{  \} } \\
+
 \end{align}
 $$
-
-[[#Gradient Descent algorithm|gradient descent of Linear regression]]과 비슷하지만, $f_{\vec{w},b}(\vec{x})$의 정의가 다르다.
+[[Andrew Ng, Course 1#Gradient Descent algorithm|gradient descent of Linear regression]]과 비슷하지만, $f_{\vec{w},b}(\vec{x})$의 정의가 다르다.
 $$
 \begin{align}
 \text{Linear regression : } &f_{\vec{w},b}(\vec{x}) = \vec{w} \cdot  \vec{x} + b \\
@@ -348,10 +343,10 @@ $$
 ### Solution
 1. collect more training examples.
 2. select features to include/exclude 
-3. reduce size of parameters -  [[#Cost function with regularization|regularization]]
+3. reduce size of parameters -  [[Andrew Ng, Course 1#Cost function with regularization|regularization]]
 
 ## Cost function with regularization
-![Image](https://github.com/user-attachments/assets/e28e522c-7238-46f9-90e0-d6604292ab71)
+![[overfit_example.png]]
 $w_{3},w_{4}$를 매우 작게 만듦으로써 왼쪽과 같은 모델을 만들기 위한 방법은 다음과 같다.
 $$
 \begin{align}
@@ -378,6 +373,7 @@ $$
 &\ \ \ \ \ b = b - \alpha \frac{1}{m} \Sigma_{i=1}^m(f_{\vec{w},b}(\vec{x}^{(i)}) - y^{(i)}) \\
 &\text{ \} }
 \end{align}
+
 $$
 
 (1)의 식을 정리하면, 다음과 같다.
