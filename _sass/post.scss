@@ -646,7 +646,10 @@ main {
   margin: 2rem auto;
 
   svg {
-      width: 100% !important;
-      height: auto !important;
+    width: 100% !important;
+    height: auto !important; /* 기본 */
+    min-height: 300px !important;  /* 추가: 최소 세로 높이 확보 */
+    display: block;
+    margin: auto;
   }
 }
