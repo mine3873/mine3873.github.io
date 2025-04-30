@@ -637,3 +637,16 @@ main {
 .top-arrow { left:calc(50vw + #{$contentwd}/2 - 4rem); }
 
 }
+
+.language-mermaid {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  text-align: center;
+  margin: 2rem auto;
+
+  svg {
+      width: 100% !important;
+      height: auto !important;
+  }
+}
