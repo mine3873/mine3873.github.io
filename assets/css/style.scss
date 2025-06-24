@@ -36,19 +36,6 @@ button {
   padding:0;
 }
 
-.language-mermaid {
-  display: block;
-  max-width: 100%;
-  overflow-x: auto;
-  text-align: center;
-  margin: 2rem auto;
-
-  svg {
-      width: 100% !important;
-      height: auto !important;
-  }
-}
-
 /* Disable default input cancel button */
 input::-ms-clear,
 input::-ms-reveal{
