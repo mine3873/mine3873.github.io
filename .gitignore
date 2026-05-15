@@ -27,4 +27,4 @@ _sass/vendors
 assets/js/dist
 
 # for backup files
-assets/posts/img/
+assets/backup/
