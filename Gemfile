@@ -6,7 +6,7 @@ gem "jekyll-theme-chirpy", "~> 7.5"
 
 gem "http_parser.rb", "0.8.0"
 
-# gem "html-proofer", "~> 5.0", group: :test
+gem "html-proofer", "~> 5.0", group: :test
 
 platforms :windows, :jruby do
   gem "tzinfo", ">= 1", "< 3"
