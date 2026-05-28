@@ -137,7 +137,7 @@ $$
 L_{t-1} = \mathbb{E}_{q}\left[ \frac{1}{2\sigma_{t}^{2}}||\tilde{\mu}_{t}(\mathbf{x}_{t},\mathbf{x}_{0}) - \mu_{\theta}(\mathbf{x}_{t},t)||^{2} \right] + C \tag{3}
 $$
 
-이때 $C$ 는 학습 파라미터 $\theta$ 와 관련 없는 항들을 따로 뺀 것으로, 자세한 계산 과정은 [여기를 확인하자](#eq-3-l-based).
+이때 $C$ 는 학습 파라미터 $\theta$ 와 관련 없는 항들을 따로 뺀 것으로, 자세한 계산 과정은 [여기를 확인하자](#eq-3-l-based-mean).
 
 결국 우리가 학습할 모델이 $q(x_{t-1} \| x_{t}, x_{0})$ 의 평균값 $\tilde{\mu}\_{t}(x\_{t}, x\_{0})$ 를 예측하게 되는 문제로 축소된다.  
 
@@ -258,7 +258,7 @@ $$
 ### Eq. 2 q_posterior
 
 
-### Eq. 3 L based $\mu$
+### Eq. 3 L based mean
 
 
 ### Eq. 4 reparameterization with epsilon
