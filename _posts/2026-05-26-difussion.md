@@ -2,7 +2,7 @@
 title: "Denoising Diffusion Probabilistic Models"
 date: 2026-05-27 19:27:00 +0900
 categories: [DL]
-tags: [dl] 
+tags: [dl, ddpm] 
 math: true
 mermaid: true
 ---
@@ -19,7 +19,9 @@ mermaid: true
 
 그렇다면, 이 분자가 퍼지는 과정을 완벽하게 역추적한다면? 도대체 어떤 경우없는 사람이 방귀를 뀌었는지 알아낼 수 있는 초기 상태를 확인할 수 있다.  
 
-**DDPM(Denoising Diffusion Probabilistic Models)** 은 이러한 점을 생성형 모델에 적용하였다.  
+[Deep Unsupervised Learning using Nonequilibrium Thermodynamics](https://arxiv.org/pdf/1503.03585) 여기서 이러한 개념을 생성형 모델에 처음 적용했는데, 지금 살펴볼 **DDPM(Denoising Diffusion Probabilistic Models)** 은 여기서 더 발전된 것으로 볼 수 있다.  
+
+
 
 ![forward process exp](https://i.imgur.com/sM6GzLs.gif)
 
@@ -27,24 +29,13 @@ mermaid: true
 
 ![DGM_both_process](https://i.imgur.com/6HtTRJd.png)
 
-위 사진과 같이 전체 Diffusion의 구조는 Forward Process, Reverse Process로 구성되는데, 두 Process는 모두 Markov chain으로 정의된다.  
+위 사진과 같이 전체 Diffusion의 구조는 Forward Process, Reverse Process로 구성되는데, 두 Process는 모두 Markov chain으로 정의되며, 각 연쇄 단계에서 각각 소량의 노이즈를 추가/제거가는 과정이다. 
 
-여기서 분자들이 퍼져 나가는 그 움직임을 수학적으로 정의해야 한다. 다음 상태 분자의 위치는 현재 상태 분자 위치를 기준으로 하는 특정 크기의 구체의 영역 내의 한 지점으로 생각할 수 있다. 하지만 그 중 어느 지점이 분자의 다음 위치가 될지 예측하는 것은 거의 불가능하다. 하지만 시간의 변화량 $\nabla t$ 을 충분히 작게하면, 즉, 특정 분자를 기준으로 아~~~주 미세한 찰나의 시간 동안 관찰한다면, 분자의 다음 위치를 나타내는 해당 구체의 크기도 마찬가지로 작아지게 될 것이고, 해당 구체의 크기를 충분히 줄이면 다음 분자의 위치는 가우시안 분포로 근사할 수가 있다! 즉, 분자가 퍼지는 Forward Process를 아주 미세한 가우시안 분포들로 정의할 수 있으면, 그 역과정인 Reverse Process 또한 가우시안으로 정의할 수 있다는 것이다. 자세한건 [여기서 확인하자](#markov-chain의-각-과정이-가우시안-분포가-되는-이유)
+## Background
 
-## Objective
+### Forward Process
 
-Diffusion 모델은 $p_{\theta}(x_{0}) = \int p_{\theta}(x_{0:T}) \, dx_{1:T}$ 형태의 잠재 변수 모델로, 여기서 $p_{\theta}(x_{0:T})$ 가 **Reverse Process, $p_{\theta}$** 이다.  
-
-$$
-\begin{align}
-    p_{\theta}(x_{0:T}) &= p(x_{T})\prod_{t=1}^{T} p_{\theta}(x_{t-1}\|x_{t}) \\
-    p_{\theta}(x_{t-1}|x_{t}) &= \mathcal{N}(x_{t-1}; \mu_{\theta}(x_{t},t), \Sigma_{\theta}(x_{t},t))
-\end{align}
-$$
-
-여기서 $T$ 시점의 완전한 노이즈 상태는 $p(x_{T}) = \mathcal{N}(x_{t-1}; 0, \mathbf{I})$ 로 정의된다. 
-
-**Forward Process, $q$** 는 다음과 같이 정의된다.  
+노이즈를 더해가는 과정인 **Forward Process, $q$** 는 다음과 같이 정의된다.  
 
 $$
 \begin{align}
@@ -53,13 +44,15 @@ $$
 \end{align}
 $$
 
-여기서 $\beta_{t}$ 는 $0$ 에 가까운 값의 Forward Process의 분산으로, Forward Process의 각 단계에서, 이전 상태 $x_{t-1}$ 의 값을 미세하게 감소시키고 미세한 노이즈를 추가하는 것을 볼 수 있다.  
+여기서 $\beta_{t} \in (0, 1)$ 는 노이즈 스케줄이며, 각 단계에서의 상태 변환이 가우시안 분포로 이루어지는 것을 볼 수 있다. 
 
-여기서 $x_{t} = \sqrt{1-\beta_{t}}x_{t-1} + \sqrt{\beta_{t}}\epsilon \quad ( \epsilon \sim \mathcal{N}(0, \mathbf{I}))$ 으로 나타낼 수 있는데, $x_{t}$ 의 분산은 $1$ 로 유지된다. 이를 통해 데이터의 스케일을 통제하여 $T$ 단계에서 완전한 노이즈 상태 $\mathcal{N}(0, \mathbf{I})$ 에 맞출 수 있고, 고정된 분산으로 학습도 쉬워진다.  
+여기서 $x_{t} = \sqrt{1-\beta_{t}}x_{t-1} + \sqrt{\beta_{t}}\epsilon \quad ( \epsilon \sim \mathcal{N}(0, \mathbf{I}))$ 으로 나타낼 수 있는데, $t$ 시점에서의 $x_{t}$ 는 이전 상태 $x_{t-1}$ 기 $\sqrt{1 - \beta_{t}} \quad (1 - \beta_{t} < 1)$ 만큼 감소된 후, $\sqrt{\beta_{t}}\epsilon \quad ( \epsilon \sim \mathcal{N}(0, \mathbf{I}))$ 만큼의 노이즈가 추가된 상태라고 볼 수 있다. 즉 앞선 엘레베이터 예시로 다시 설명하자면, 신선한 공기(이전 상태)가 조금씩 밖으로 빠져나가고 방귀 냄새(노이즈)가 그 빈자리를 채워나가는 것이다.  
 
-이러한 $\beta_{t}$ 값은 하이퍼파라미터로 상수로 고정되거나, 학습시킬 수 있는데, 이 논문에선 상수로 고정하였다.  
+여기서 모든 $t$에 대해 $x_{t}$ 의 분산은 $1$ 로 유지되는데, 이를 통해서 고정된 분산으로 학습이 용이하며, 최종적으로 $T$ 단계에서 완전히 노이즈해지는 $x_{T}$ 가 $\mathcal{N}(0, \mathbf{I})$ 와 같이 표준 정규 분포가 될 수 있게끔 한다. (왜 분산이 1로 고정되는지는 [여기](#forward-process-의-분산이-1로-고정되는-이유))
 
-Forward Process의 가장 큰 특징은 특정 스텝의 $x_{t}$ 를 **단힌 형태 (Closed Form)** 로 계산할 수 있다는 것이다.  
+이러한 $\beta_{t}$ 값은 하이퍼파라미터로 상수로 고정되거나, 학습시킬 수 있는데, 이 논문에선 $10^{-4} \to 2 \times 10^{-2}$ 로 선형적으로 증가하게끔 상수로 고정하였다.  
+
+Forward Process의 가장 큰 특징은 각 과정이 모두 가우시안으로 정의되기 때문에, 특정 스텝의 $x_{t}$ 를 **단힌 형태 (Closed Form)** 로 계산할 수 있다는 것이다. 다시 말해서, $x_{t}$ 를 계산하기 위해서 $x_{0}$ 부터 시작해서 $x_{1} \to x_{2} \to \cdots \to x_{t}$ 이런 식으로 순차적으로 계산해 나가는 것이 아니라, $x_{0}$ 이 주어지고, $\beta_{t}$ 의 값만 알면, $x_{0} \to x_{t}$ 로 바로 계산할 수 있다는 것이다! 
 
 $$
 \begin{align}
@@ -75,7 +68,30 @@ $$
 x_{t} = \sqrt{\bar{\alpha}_{t}}x_{0} + \sqrt{1-\bar{\alpha}_{t}} \epsilon \quad ( \epsilon \sim \mathcal{N}(0, \mathbf{I}))
 $$
 
-목적함수는 NLL(Negative log-likelihood)를 최소화하는데, VAE에서와 마찬가지로 ELBO를 통해 이를 근사하여 최적화한다. 
+왜 이따구가 되는지는 [여기를 확인하자](#closed-form-of-forward-process)
+
+$x_{t}$ 를 바로 계산할 수 있다는 것은 꽤나 중요한데, 뒤에서 설명하겠지만 DDPM의 학습은 매 학습스텝마다 $t \sim \mathcal{U}(1, T)$ 값을 무작위로 가져와 $x_{t}$ 를 모델의 입력으로 사용하는데, 매 학습스텝에서 일일히 $x_{1} \to x_{2} \to \cdots \to x_{t}$ 이딴식으로 계산이나 하고 있으면 학습 시간이 드럽게 오래걸릴 것이다. (거기다 가뜩이나 논문에선 $T$ 의 값을 $T=1000$ 과 같이 크게 설정한다..) 
+
+### Reverse Process
+
+노이즈를 제거해가는 과정인 **Reverse Process, $p_{\theta}$** 는 다음과 같이 정의된다. 
+
+$$
+\begin{align}
+    p_{\theta}(x_{0:T}) &= p(x_{T})\prod_{t=1}^{T} p_{\theta}(x_{t-1}|x_{t}) \\
+    p_{\theta}(x_{t-1}|x_{t}) &= \mathcal{N}(x_{t-1}; \mu_{\theta}(x_{t},t), \Sigma_{\theta}(x_{t},t))
+\end{align}
+$$
+
+Forward Process와 마찬가지로 가우시안으로 정의된다. 앞서서 $\beta_{t}$ 의 값을 논문에선 $10^{-4} \to 2 \times 10^{-2}$ 와 같이 매우 작은 값으로 설정하였는데, $\beta_{t}$ 의 값은 결국 매 단계에서 추가되는 노이즈의 양으로 생각될 수 있다.  이러한 추가되는 노이즈의 양이 매우 적을 때, 그리고 추가적으로 Process의 단계 $T$ 의 수가 매우 커질 때, 그 역과정인 Reverse Process도 충분히 가우시안으로 근사할 수 있다.  
+
+> 그러니까 음.. 예를 들어서 탄산 음료의 병뚜껑을 처음 열었을 때, 탄산 분자가 공기 중으로 퍼져 나가는걸 상상해보자. 탄소 분자가 퍼져 나가면서 $\nabla t$ 후에 이동되는 위치 $x_{t+1}$ 은 현재 위치 $x_{t}$ 를 기준으로 하는 구체 영역 내의 한 점으로 생각될 수 있다. 물론 이를 정확히 예측하는 것은 거의 불가능하지만, 관측하는 시간을 찰나의 시간으로 줄인다면, 즉, $\nabla t \to 0$ 이라면, 다음 위치 $x_{t+1}$ 을 결정하는 $x_{t}$ 를 기준으로 하는 구체의 영역도 마찬가지로 줄어들 것이다. 이렇게 아~주 작게 줄어들면 탄소 분자의 위치 변화는 변동성이 줄어들고 선형성이 조금씩 증가하면서, 가우시안으로 근사할 수 있게 된다. [SCORE-BASED GENERATIVE MODELING THROUGH STOCHASTIC DIFFERENTIAL EQUATIONS](https://arxiv.org/pdf/2011.13456) 여기서 지금처럼 $t=1,2,...,T$ 와 같은 이산형 $t$ 가 아닌 연속형 $t \in [1,T]$ 에서 이를 다루긴 하는데, 일단 근래에 따로 글로 작성하겠다..
+
+아무튼 위 식에서 $p(x_{T}) =  \mathcal{N}(x_{T}; 0, \mathbf{I})$ 로 정의되고, 결국 우리가 학습한 모델이 Reverse Process 각 단계에서의 평균 $\mu_{\theta}$ 와 분산 $\Sigma_{\theta}$ 이 두 값을 출력해야 함을 알 수 있다. 
+
+## Objective
+
+목적함수는 NLL(Negative log-likelihood)을 최소화하는데, VAE에서와 마찬가지로 ELBO를 통해 이를 근사하여 최적화한다. 
 
 $$
 \begin{align}
@@ -85,10 +101,10 @@ $$
 \end{align} \tag{1}
 $$
 
-자세한 과정은 [여기](#eq-1) 에서 확인하자.  
+자세한 과정은 [여기](#eq-1-nll-elbo) 에서 확인하자.  
 
 
-위 식에서 $q(x_{t-1} \| x_{t}, x_{0})$ 은 가우시안의 형태로, $x_{0}$ 을 조건으로 가질 때 계산할 수 있다.   
+위 식에서 $L_{t-1}$ 부분을 보면, 결국 우리의 모델이 예측할 $p_{\theta}(x_{t-1} \| x_{t})$ 가 $q(x_{t-1}\|x_{t}, x_{0})$ 와 비슷해져야 함을 알 수 있는데, $q(x_{t-1}\|x_{t}, x_{0})$ 은 가우시안의 형태로, $q(x_{t-1}\|x_{t})$ 에 추가적으로 $x_{0}$ 을 조건으로 둘 때 계산할 수 있다.   
 
 $$
 \begin{align}
@@ -99,18 +115,21 @@ $$
 $$
 
 왜 이따구로 나오는지 계산 과정은 [이 형님의 블로그](https://joydeep31415.medium.com/the-math-behind-diffusion-models-ddpm-9fabe9c9f1d9)를 참고하자....
+[여기](#eq-2)
+
+이제 각 항들을 각각 살펴봐서 손실함수를 어떻게 계산해야 할 지 알아보자.
 
 ### $L_{T}$
 
-논문에선 $\beta_{t}$ 를 상수로 정의하기 때문에, $q(x_{T}\|x_{0})$ 또한 학습 동안 상수로 유지된다. 따라서 학습 과정에서 무시할 수 있다.  
+논문에선 $\beta_{t}$ 를 상수로 정의하기 때문에, $q(x_{T}\|x_{0})$ 또한 학습 동안 상수로 유지된다. $p(x_{T})$ 도 $\mathcal{N}(0, \mathbf{I})$ 의 표준 정규 분포로 고정되므로, 따라서 논문에선 이를 무시한다.  
 
 ### $L_{1:T-1}$
 
 학습을 통해서 $p_{\theta}(x_{t-1}\| x_{t}) = \mathcal{N}(x_{t-1}; \mu_{\theta}(x_{t}, t), \Sigma_{\theta}(x_{t}, t))$ 를 $q(x_{t-1} \| x_{t}, x_{0})$ 와 최대한 가깝게 하도록 해야한다.  
 
-그러기 위해선 $\mu_{\theta}(x_{t}, t), \Sigma_{\theta}(x_{t}, t)$ 를 나타내야 하는데, 논문에선 $\Sigma_{\theta}(x_{t}, t) = \sigma_{t}^{2} \mathbf{I}$ 의 상수로 정의한다.  
+그러기 위해선 $\mu_{\theta}(x_{t}, t), \Sigma_{\theta}(x_{t}, t)$ 를 앞서 살펴본 $q(x_{t-1} \| x_{t}, x_{0})$ 의 평균과 분산의 값과 비슷하게끔 해야하는데, 논문에선 $\Sigma_{\theta}(x_{t}, t) = \sigma_{t}^{2} \mathbf{I}$ 의 상수로 정의한다.  
 
-$\sigma\_{t}^{2} = \beta\_{t}$ 또는 $\sigma\_{t}^{2} = \tilde{\beta}\_{t}$ 로 정의하는데, 전자는 원본 데이터 $x_{0}$ 이 완전환 무작위 노이즈 $\mathcal{N}(0, \mathbf{I})$ 라고 가정할 때, 즉 $x\_{0}$ 에 대한 정보가 아에 없을 때 최적의 값이고, 후자는 $x\_{0}$ 가 한 점에 고정되어 있을 때, 즉 $x\_{0}$ 에 대해 확실히 알 고 있는 상태에서 최적의 값으로, 각각 실제 이상적인 역과정 분산의 상한선과 하한선이다.  
+$\sigma\_{t}^{2} = \beta\_{t}$ 또는 $\sigma\_{t}^{2} = \tilde{\beta}\_{t}$ 로 정의하는데, 두 값은 논문에서 비슷한 성능을 가진다고 한다.  
 
 그러면 $p\_{\theta}(\mathbf{x}\_{t-1} \| \mathbf{x}\_{t}) = \mathcal{N}(\mathbf{x}\_{t-1};\mu\_{\theta}(\mathbf{x}\_{t},t), \sigma\_{t}^{2}\mathbf{I})$ 에 대해서, 앞선 $L\_{t-1}$ 을 다음과 같이 나타낼 수 있다.  
 
@@ -118,9 +137,13 @@ $$
 L_{t-1} = \mathbb{E}_{q}\left[ \frac{1}{2\sigma_{t}^{2}}||\tilde{\mu}_{t}(\mathbf{x}_{t},\mathbf{x}_{0}) - \mu_{\theta}(\mathbf{x}_{t},t)||^{2} \right] + C \tag{3}
 $$
 
-이때 $C$ 는 학습 파라미터 $\theta$ 와 관련 없는 항으로, 위 식은 결국 모델이 Forward Process의 사후 평균 $\tilde{\mu}_{t}$ 를 예측하도록 학습됨을 의미한다. 
+이때 $C$ 는 학습 파라미터 $\theta$ 와 관련 없는 항들을 따로 뺀 것으로, 자세한 계산 과정은 [여기를 확인하자](#eq-3-l-based).
 
-여기서 앞서서 $x_{t}(x_{0}, \epsilon) = \sqrt{1-\beta_{t}}x_{t-1} + \sqrt{\beta_{t}}\epsilon \quad ( \epsilon \sim \mathcal{N}(0, \mathbf{I}))$ 와 식 2를 사용하여 다음과 같이 나타낼 수 있다.  
+결국 우리가 학습할 모델이 $q(x_{t-1} \| x_{t}, x_{0})$ 의 평균값 $\tilde{\mu}\_{t}(x\_{t}, x\_{0})$ 를 예측하게 되는 문제로 축소된다.  
+
+--- 
+
+여기서 앞서서 $x_{t}(x_{0}, \epsilon) = \sqrt{1-\beta_{t}}x_{t-1} + \sqrt{\beta_{t}}\epsilon \quad ( \epsilon \sim \mathcal{N}(0, \mathbf{I}))$ 와 식 2의 $\tilde{\mu}\_{t}(x\_{t}, x\_{0})$ 을 통해 다음과 같이 나타낼 수 있다.  
 
 $$
 \begin{align}
@@ -129,19 +152,27 @@ L_{t-1} - C &= \mathbb{E}_{\mathbf{x}_{0},\epsilon}\left[ \frac{1}{2\sigma_{t}^{
 \end{align} \tag{4}
 $$
 
-즉, 모델은 $x_{t}$ 와 $t$ 가 입력으로 주어졌을 때 $\frac{1}{\sqrt{\alpha\_{t}}}\left(\mathbf{x}\_{t} - \frac{\beta\_{t}}{\sqrt{ 1 - \bar{\alpha}\_{t}}}\epsilon \right)$ 을 예측하는 것과 같다. 더 나아가서 $\epsilon$ 을 제외한 나머지 모든 값들이 주어지기 때문에, 다음과 같다.  
+자세한 과정은 [여기를 확인하자](#eq-4-reparameterization--with)
+
+즉, 모델은 $x_{t}$ 와 $t$ 가 입력으로 주어졌을 때 $\frac{1}{\sqrt{\alpha\_{t}}}\left(\mathbf{x}\_{t} - \frac{\beta\_{t}}{\sqrt{ 1 - \bar{\alpha}\_{t}}}\epsilon \right)$ 을 예측하는 것과 같다. 또한 여기서 샘플링된 $\epsilon \sim \mathcal{N}(0, \mathbf{I})$ 를 제외하고, 나머지 $\alpha, \beta, \bar{\alpha}, x_{t}$ 값들은 모두 상수의 형태로 주어지므로, 다음과 같이 우리의 모델 $\mu_{\theta}$ 는 전체 평균 $\frac{1}{\sqrt{\alpha\_{t}}}\left(\mathbf{x}\_{t} - \frac{\beta\_{t}}{\sqrt{ 1 - \bar{\alpha}\_{t}}}\epsilon \right)$ 을 예측하는 것이 아닌, $\epsilon \sim \mathcal{N}(0, \mathbf{I})$ 값만을 예측하게끔 범위를 축소시킬 수 있다.  
 
 $$
 \mu_{\theta}(\mathbf{x}_{t},t) = \frac{1}{\sqrt{ \alpha_{t} }} \left( \mathbf{x}_{t} - \frac{\beta_{t}}{\sqrt{ 1-\bar{\alpha}_{t} }}\epsilon_{\theta}(\mathbf{x}_{t},t) \right) \tag{5}
 $$
 
-즉, 위 식을 식 4에 적용하면 다음과 같다.  
+즉, 위 식을 식 4에 적용해서, 다시 나타내면 다음과 같다. 
 
 $$
-\mathbb{E}_{\mathbf{x}_{0},\epsilon}\left[ \frac{\beta_{t}^{2}}{2\sigma_{t}^{2}\alpha_{t}(1-\bar{\alpha}_{t})} ||\epsilon - \epsilon_{\theta}(\sqrt{ \bar{\alpha}_{t} }\mathbf{x}_{0} + \sqrt{ 1-\bar{\alpha}_{t} }\epsilon,t) ||^{2} \right] \tag{6}
+\begin{align}
+    &\mathbb{E}_{\mathbf{x}_{0},\epsilon}\left[ \frac{\beta_{t}^{2}}{2\sigma_{t}^{2}\alpha_{t}(1-\bar{\alpha}_{t})} ||\epsilon - \epsilon_{\theta}(\sqrt{ \bar{\alpha}_{t} }\mathbf{x}_{0} + \sqrt{ 1-\bar{\alpha}_{t} }\epsilon,t) ||^{2} \right] \\
+    =& \mathbb{E}_{\mathbf{x}_{0},\epsilon}\left[ \lambda_{t} \cdot ||\epsilon - \epsilon_{\theta}(\sqrt{ \bar{\alpha}_{t} }\mathbf{x}_{0} + \sqrt{ 1-\bar{\alpha}_{t} }\epsilon,t) ||^{2} \right]
+\end{align}
+ \tag{6}
 $$
 
-결국 $p_{\theta}$ 가 $q$ 와 가까워지도록 학습하는 것은, 초기 데이터 $x_{0}$ 에서 섞인 노이즈를 예측하는 문제가 된 것을 알 수 있다.  
+역시나 자세한 계산 과정은 [여기를 확인하자](#eq-6-reconstruction-with--approximator).
+
+결국 $p_{\theta}$ 가 $q$ 와 비슷해지로고 학습한다는 것은, $x_{t}$ 에서 섞인 노이즈를 예측하는 것과 같음을 알 수 있다. 
 
 ### $L_{0}$
 
@@ -172,8 +203,7 @@ $$
 L_{\text{simple}}(\theta) = \mathbb{E}_{t, x_{0}, \epsilon}\left[\left|\left| \epsilon - \epsilon_{\theta}(\sqrt{\bar{\alpha}_{t}}x_{0} + \sqrt{1 - \bar{\alpha}_{t}}\epsilon, t) \right|\right|^{2}\right] \tag{7}
 $$
 
-위 식은 $t > 1$ 일 때, 앞서 살펴본 식 6의 가중치를 제거한 것과 같으며, $t=1$ 일 때 $L_{0}$ 과 같다.  
-즉, 위 식이 최종적인 목적 함수로, 결국 노이즈가 확산되가는 과정의 역을 학습한다는 것은 주어진 이미지가 있을 때 이 이미지에 어떤 노이즈가 섞인 것인지 모델이 예측하는 것과 같음을 의미한다.  
+논문의 저자는 위와 같이 $\lambda_{t} = 1$ 로 설정했는데, 데이터의 소량의 노이즈만 낀 초기 단계 $t$ 에서의 손실 함수의 가중치가 감소되게 되었고, 데이터를 거의 알아보지 못할 정도로 노이즈가 낀 $t$ 단계에서의 노이즈를 제거하는 것을 중심으로 모델이 학습하는 결과를 낳게 되었다. 즉, 다시 말해서 작은 $t$ 에서 데이터를 거의 알아볼 수 있을 때가 아닌, 큰 $t$ 에서 데이터를 거의 알아볼 수 없을 정도로 노이즈가 낀 상태에서 노이즈를 제거하는 것에 초점을 두고 모델을 학습을 진행하게끔 되었다는 것이다. 아무튼 이렇게 했더니 더 좋은 화질의 결과물을 얻었다고 한다.  
 
 
 ## Implementation
@@ -182,44 +212,34 @@ $$
 
 ![Train_algorithm](https://i.imgur.com/ZO9dWoJ.png)
 
-논문에서 모델의 구조는 UNet을 기반으로 그룹 정규화(Group Normalization) 과 Self-attention이 사용하였다. 단계 $t \quad (1 \leq t \leq T)$ 에 대해서 총 $T$ 개의 모델이 아닌 파라미터를 공유하는 하나의 모델을 사용하고, 단계 $t$ 에 따라 구분하기 위해 $t$ 를 Transformer에서 사용된 Position Embedding을 수행하여 모델에 입력된다. 
+각 학습스텝마다 $t \sim \mathcal{U}(1,T)$, $\epsilon \sim \mathcal{N}(0, \mathbf{I})$ 를 샘플링하여, Closed-form으로 $x_{t}$ 를 계산한 다음, $x_{t}$ 와 $t$ 를 모델에 입력으로 넣어 출력한 결과를 $\epsilon$ 과의 MSE Loss를 계산하여 학습을 진행한다.  
+
+![Sample_algorithm](https://i.imgur.com/dZZgaOi.png)
+
+샘플링 과정은 위와 같은데, 표준 정규 분포로부터 샘플링된 무작위 $x_{T} \sim \mathcal{N}(0, \mathbf{I})$ 를 시작으로, $\epsilon \sim \mathcal{N}(0, \mathbf{I})$ 을 샘플링하고 $x_{t}$ 를 Closed-form으로 계산한 뒤, 우리가 학습한 모델 $\epsilon_{\theta}$ 를 이용하여, $\mu\_{\theta}(\mathbf{x}\_{t},t) = \frac{1}{\sqrt{ \alpha\_{t} }} \left( \mathbf{x}\_{t} - \frac{\beta\_{t}}{\sqrt{ 1-\bar{\alpha}\_{t} }}\epsilon\_{\theta}(\mathbf{x}\_{t},t) \right)$ , $\Sigma\_{\theta} = \sigma\_{t}$ 를 통해, $x\_{t-1} = \mu\_{\theta}(\mathbf{x}\_{t},t) + \sigma \epsilon$ 을 계산한다. 이 과정을 $T$ 번 반복하여, 최종적으로 $x_{0}$ 을 얻는다.  
+
+
+논문에서 모델 $\epsilon_{\theta}$ 의 구조는 UNet을 기본 베이스라인으로, 추가적으로 그룹 정규화(Group Normalization) 와 Self-attention이 특정 Feature map 크기에서 사용하였다. 이 때 Reverse Process의 각 단계 $t$ 에 대해서 총 $T$ 개의 모델이 아닌 파라미터를 공유하는 하나의 모델을 사용하고, 단계 $t$ 를 따로 구분하기 위해 $t$ 를 Transformer에서 사용된 Position Embedding을 수행하여 모델에 입력된다. 아무튼 자세한 구조는 논문을 확인하자...
 
 ![Train_result](https://i.imgur.com/qg9CvtI.png)
 
-위 사진은 이렇게 학습된 Diffusion 모델이 출력한 이미지들로, VAE에서 흐릿한 이미지가 아닌 (DC)GAN 처럼 뚜렷한 이미지가 출력되는 것을 볼 수 있다. 
-
-## vs. Other Generative Models
-
-~~추가 중~~
+위 사진은 LSUN bedroom 데이터셋에서 $1.5e^{5}$ 스텝만큼 학습된 모델을 통해 샘플링한 이미지들로, VAE에서 흐릿한 이미지가 아닌 (DC)GAN 처럼 뚜렷한 이미지가 출력되는 것을 볼 수 있다. 
 
 ## 찌라시
 
-일단 딱 이렇게 주어졌을 때 이렇게 돼서 이러이렇게 됐다라는건 알겠는데, 왜 이렇게 주어졌는지가 드럽게 궁금하다. 근데 내 내공이 아직 너무나도 부족하다. 머리가 터질 것 같다. 공부할게 너무 많다. 근데 너무 궁금하다. 언젠가 하나씩 내가 도장깨기 해주마.
+최종적인 목적함수가 논문에선 Denoising Score Matching 과 같다고 언급한다. 또한 샘플링 과정도 Langevin Dynamics 와 같다고 언급한다. 그리고 
 
 
 ## 추가 설명
 
-### Markov Chain의 각 과정이 가우시안 분포가 되는 이유?
+### FOrward Process 의 분산이 1로 고정되는 이유
 
-앞서서 기체 분자 예시를 계속 이어나가서, 각 스텝의 변화량 $\nabla t$ 를 $0$ 에 가깝게 설정하면, 분자가 다음에 존재할 위치를 가우시안 분포 나타낼 수 있다고 했었다. 아 그렇구나가 아니고 왜 그런건데.
 
-먼저 우리가 보는 거시적인 관점에선 $\nabla t \to 0$ 은 매우 짧은 순간이지만, 미시적인 분자 세계의 관점에서는 겁~~~~~나게 많은 분자들이 서로 충돌하는 아주 긴 시간이다.
-구글에 검색해보니 상온, 1기압의 조건에서 공기 중의 기체 분자 1개가 다른 분자와 충돌하는 횟수는 1초에 $10^{9} \sim 10^{10}$ 번이라고 한다. ~~암튼 구글이 그럼~~  
-아무튼 이때 각 분자가 튕겨 나가는 방향과 속도는 완전히 독립적인 무작위 확률변수이다. 여기서 통계학에서의 중심극한정리(CLT)에 따라, 이러한 독립적인 무작위 변수가 아주 많이~ 계속 더해지면 그 결과는 가우시안 분포로 수렴한다.  
+### Closed-form of Forward Process 
 
-그럼 분자들의 움직임이 수없이 더해져서 가우시안 분포가 된다면 $\nabla t \to 0$ 로 설정하는 이유는? 바로 $\nabla t$ 가 큰 값을 가지게 되면, 극단적으로 설명하자면 초기 상태에서 한 스텝 만에 $x_{T}$ 가 되버려 초기 상태 $x_{0}$ 를 아에 알아볼 수가 없다. 따라서 $\nabla t \to 0$ 로 설정하여 이전 단계의 상태 $x_{t-1}$ 를 어느정도만큼은 보존하게끔 한다. 
 
---- 
 
-~~일단 대충 결론 부분만 훑어봤는데 다시 자세히 읽어서 다시 작성하겠다..~~
-
-실제로 공간의 경계가 존재할 때 (여기선 이미지 픽셀의 값의 범위인 $[-1, 1]$.), 분자들의 무작위 궤적 집합이 연속적인 가우시안 확률 과정으로 수렴한다는 사실을 기능적 중심극한정리(Functional Central Limit Theorem, FCLT) 를 통해 증명해 두었다.  
-
-> [Functional central limit theorem for Brownian
-particles in domains with Robin boundary
-condition](https://arxiv.org/pdf/1404.1442)
-
-### Eq. 1
+### Eq. 1 NLL ELBO
 
 $$
 \begin{align}
@@ -234,6 +254,17 @@ L &= \mathbb{E}_{q}\left[ -\log \frac{p_{\theta}(\mathbf{x}_{0:T})}{q(\mathbf{x}
 &= \mathbb{E}_{q}\left[ D_{KL}(q(\mathbf{x}_{T}|\mathbf{x}_{0}) || p(\mathbf{x}_{T})) - \log p_{\theta}(\mathbf{x}_{0}|\mathbf{x}_{1}) + \sum_{t>1}D_{KL}(q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) || p_{\theta}(\mathbf{x}_{t-1}|\mathbf{x}_{t})) \right] \tag{22}
 \end{align}
 $$
+
+### Eq. 2 $q(x_{t-1} \| x_{t}, x_{0})$
+
+
+### Eq. 3 L based $\mu$
+
+
+### Eq. 4 reparameterization $\mu$ with $\epsilon$
+
+
+### Eq. 6 reconstruction with $\epsilon$-approximator
 
 ~~추가 중~~
 
