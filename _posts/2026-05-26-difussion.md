@@ -115,7 +115,7 @@ $$
 $$
 
 왜 이따구로 나오는지 계산 과정은 [이 형님의 블로그](https://joydeep31415.medium.com/the-math-behind-diffusion-models-ddpm-9fabe9c9f1d9)를 참고하자....
-[여기](#eq-2)
+[여기](#eq-2-q_posterior)
 
 이제 각 항들을 각각 살펴봐서 손실함수를 어떻게 계산해야 할 지 알아보자.
 
@@ -152,7 +152,7 @@ L_{t-1} - C &= \mathbb{E}_{\mathbf{x}_{0},\epsilon}\left[ \frac{1}{2\sigma_{t}^{
 \end{align} \tag{4}
 $$
 
-자세한 과정은 [여기를 확인하자](#eq-4-reparameterization--with)
+자세한 과정은 [여기를 확인하자](#eq-4-reparameterization-with-epsilon)
 
 즉, 모델은 $x_{t}$ 와 $t$ 가 입력으로 주어졌을 때 $\frac{1}{\sqrt{\alpha\_{t}}}\left(\mathbf{x}\_{t} - \frac{\beta\_{t}}{\sqrt{ 1 - \bar{\alpha}\_{t}}}\epsilon \right)$ 을 예측하는 것과 같다. 또한 여기서 샘플링된 $\epsilon \sim \mathcal{N}(0, \mathbf{I})$ 를 제외하고, 나머지 $\alpha, \beta, \bar{\alpha}, x_{t}$ 값들은 모두 상수의 형태로 주어지므로, 다음과 같이 우리의 모델 $\mu_{\theta}$ 는 전체 평균 $\frac{1}{\sqrt{\alpha\_{t}}}\left(\mathbf{x}\_{t} - \frac{\beta\_{t}}{\sqrt{ 1 - \bar{\alpha}\_{t}}}\epsilon \right)$ 을 예측하는 것이 아닌, $\epsilon \sim \mathcal{N}(0, \mathbf{I})$ 값만을 예측하게끔 범위를 축소시킬 수 있다.  
 
@@ -170,7 +170,7 @@ $$
  \tag{6}
 $$
 
-역시나 자세한 계산 과정은 [여기를 확인하자](#eq-6-reconstruction-with--approximator).
+역시나 자세한 계산 과정은 [여기를 확인하자](#eq-6-reconstruction-with-epsilon-approximator).
 
 결국 $p_{\theta}$ 가 $q$ 와 비슷해지로고 학습한다는 것은, $x_{t}$ 에서 섞인 노이즈를 예측하는 것과 같음을 알 수 있다. 
 
@@ -255,16 +255,16 @@ L &= \mathbb{E}_{q}\left[ -\log \frac{p_{\theta}(\mathbf{x}_{0:T})}{q(\mathbf{x}
 \end{align}
 $$
 
-### Eq. 2 $q(x_{t-1} \| x_{t}, x_{0})$
+### Eq. 2 q_posterior
 
 
 ### Eq. 3 L based $\mu$
 
 
-### Eq. 4 reparameterization $\mu$ with $\epsilon$
+### Eq. 4 reparameterization with epsilon
 
 
-### Eq. 6 reconstruction with $\epsilon$-approximator
+### Eq. 6 reconstruction with epsilon-approximator
 
 ~~추가 중~~
 
