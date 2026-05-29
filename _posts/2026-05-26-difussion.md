@@ -2,7 +2,7 @@
 title: "Denoising Diffusion Probabilistic Models"
 date: 2026-05-27 19:27:00 +0900
 categories: [DL]
-tags: [dl, ddpm] 
+tags: [dl, ddpm, generative-model,] 
 math: true
 mermaid: true
 ---
@@ -39,14 +39,14 @@ mermaid: true
 
 $$
 \begin{align}
-    q(x_{1:T}|x_{0}) &= \prod_{t=1}^{T} q(x_{t}\|x_{t-1}) \\
+    q(x_{1:T}|x_{0}) &= \prod_{t=1}^{T} q(x_{t}|x_{t-1}) \\
     q(x_{t}|x_{t-1}) &= \mathcal{N}(x_{t}; \sqrt{1-\beta_{t}}x_{t-1}, \beta_{t}\mathbf{I})
 \end{align}
 $$
 
 여기서 $\beta_{t} \in (0, 1)$ 는 노이즈 스케줄이며, 각 단계에서의 상태 변환이 가우시안 분포로 이루어지는 것을 볼 수 있다. 
 
-여기서 $x_{t} = \sqrt{1-\beta_{t}}x_{t-1} + \sqrt{\beta_{t}}\epsilon \quad ( \epsilon \sim \mathcal{N}(0, \mathbf{I}))$ 으로 나타낼 수 있는데, $t$ 시점에서의 $x_{t}$ 는 이전 상태 $x_{t-1}$ 기 $\sqrt{1 - \beta_{t}} \quad (1 - \beta_{t} < 1)$ 만큼 감소된 후, $\sqrt{\beta_{t}}\epsilon \quad ( \epsilon \sim \mathcal{N}(0, \mathbf{I}))$ 만큼의 노이즈가 추가된 상태라고 볼 수 있다. 즉 앞선 엘레베이터 예시로 다시 설명하자면, 신선한 공기(이전 상태)가 조금씩 밖으로 빠져나가고 방귀 냄새(노이즈)가 그 빈자리를 채워나가는 것이다.  
+여기서 $x_{t} = \sqrt{1-\beta_{t}}x_{t-1} + \sqrt{\beta_{t}}\epsilon \quad ( \epsilon \sim \mathcal{N}(0, \mathbf{I}))$ 으로 나타낼 수 있는데, $t$ 시점에서의 $x_{t}$ 는 이전 상태 $x_{t-1}$ 가 $\sqrt{1 - \beta_{t}} \quad (1 - \beta_{t} < 1)$ 만큼 감소된 후, $\sqrt{\beta_{t}}\epsilon \quad ( \epsilon \sim \mathcal{N}(0, \mathbf{I}))$ 만큼의 노이즈가 추가된 상태라고 볼 수 있다. 즉 앞선 엘레베이터 예시로 다시 설명하자면, 신선한 공기(이전 상태)가 조금씩 밖으로 빠져나가고 방귀 냄새(노이즈)가 그 빈자리를 채워나가는 것이다.  
 
 여기서 모든 $t$에 대해 $x_{t}$ 의 분산은 $1$ 로 유지되는데, 이를 통해서 고정된 분산으로 학습이 용이하며, 최종적으로 $T$ 단계에서 완전히 노이즈해지는 $x_{T}$ 가 $\mathcal{N}(0, \mathbf{I})$ 와 같이 표준 정규 분포가 될 수 있게끔 한다. (왜 분산이 1로 고정되는지는 [여기](#forward-process-의-분산이-1로-고정되는-이유))
 
@@ -114,8 +114,7 @@ $$
 \end{align} \tag{2}
 $$
 
-왜 이따구로 나오는지 계산 과정은 [이 형님의 블로그](https://joydeep31415.medium.com/the-math-behind-diffusion-models-ddpm-9fabe9c9f1d9)를 참고하자....
-[여기](#eq-2-q_posterior)
+왜 이따구로 나오는지 계산 과정은 [여기를 참고하자....](#eq-2-q_posterior)
 
 이제 각 항들을 각각 살펴봐서 손실함수를 어떻게 계산해야 할 지 알아보자.
 
@@ -225,19 +224,60 @@ $$
 
 위 사진은 LSUN bedroom 데이터셋에서 $1.5e^{5}$ 스텝만큼 학습된 모델을 통해 샘플링한 이미지들로, VAE에서 흐릿한 이미지가 아닌 (DC)GAN 처럼 뚜렷한 이미지가 출력되는 것을 볼 수 있다. 
 
-## 찌라시
+## 찌라시 주절주절
 
-최종적인 목적함수가 논문에선 Denoising Score Matching 과 같다고 언급한다. 또한 샘플링 과정도 Langevin Dynamics 와 같다고 언급한다. 그리고 
+논문에선 최종적인 목적함수가 Denoising Score Matching와 같고, 또한 샘플링 과정도 Langevin Dynamics 와 같다고 언급한다. 이에 대해선 [SCORE-BASED GENERATIVE MODELING THROUGH STOCHASTIC DIFFERENTIAL EQUATIONS](https://arxiv.org/pdf/2011.13456) 이 논문 글을 작성할 때 뭔소린지 알아보겠다...  
+그리고 Diffusion은 VAE와 같이 근사된 우도함수를 통해 학습을 진행하는데, VAE에서 처럼 흐릿한 이미지가 아니라 (DC)GAN 과 같은 깨끗한 이미지를 출력하는 것을 볼 수 있다. 또한 (DC)GAN에선 Adversarial 훈련 방식으로 인해 학습이 불안정했고, VAE와 달리 모델의 성능을 평가할 수 있는 기준이 애매모호했던 반면에 Diffusion 모델에선 안정적인 학습이 가능했고, VAE에서와 같이 모델의 성능 평가 기준이 명확한 것으로 보아, 마치 VAE와 GAN의 각 장점들을 적절히 섞은 버전으로 느껴진다.  
+그렇지만 $x_{T}$ 부터 $T$ 번의 단계을 거쳐 샘플링을 하는게, 은근히 시간이 조금 걸렸다. 6년전 논문이니까 어떤 천재가 또 발전시켰겠지. 그리고 학창시절 책과 멀리 지냈던 탓에 블로그 글에서 가방끈 짧은게 느껴지는 것 같은데 열심히 노력해보겠다... 아무튼 공부나 하러가겠다.
+
 
 
 ## 추가 설명
 
-### FOrward Process 의 분산이 1로 고정되는 이유
+### Forward Process 의 분산이 1로 고정되는 이유
 
+$$
+\begin{align}
+    \text{Var}(x_{t}) &= \text{Var}(\sqrt{1-\beta_{t}}x_{t-1} + \sqrt{\beta_{t}}\epsilon) \\
+    &= (\sqrt{1-\beta_{t}})^{2}\text{Var}(x_{t-1}) + (\sqrt{\beta_{t}})^{2}\text{Var}(\epsilon) \\
+    &= (1-\beta_{t})\text{Var}(x_{t-1}) + \beta_{t} \quad \left( \epsilon \sim \mathcal{N}(0, \mathbf{I})\right)
+\end{align}
+$$
+
+초기 데이터 $x_{0}$ 은 정규화되어 $\text{Var}(x_{0}) = 1$ 이므로, 수학적 귀납법에 의해 모든 분산은 $1$이 된다.   
 
 ### Closed-form of Forward Process 
 
+$$
+\begin{align}
+    x_{t} &= \sqrt{1-\beta_{t}}x_{t-1} + \sqrt{\beta_{t}}\epsilon_{t-1} \\
+    &= \sqrt{\alpha_{t}}x_{t-1} + \sqrt{1-\alpha_{t}}\epsilon_{t-1} \\
+    &= \sqrt{\alpha_{t}}(\sqrt{\alpha_{t-1}}x_{t-2} + \sqrt{1-\alpha_{t-1}}\epsilon_{t-2}) + \sqrt{1-\alpha_{t}}\epsilon_{t-1} \\
+    &= \sqrt{\alpha_{t}\alpha_{t-1}}x_{t-2} + \underbrace{\sqrt{\alpha_{t}(1-\alpha_{t-1})}\epsilon_{t-2} + \sqrt{1-\alpha_{t}}\epsilon_{t-1}}_{1} \\
+    &= \sqrt{\alpha_{t}\alpha_{t-1}}x_{t-2} + \underbrace{\sqrt{1- \alpha_{t}\alpha_{t-1}}\epsilon_{t-2}}_{2} \\
+    &\cdots \\
+    &= \sqrt{\alpha_{t}\alpha_{t-1} \cdots \alpha_{1}}x_{0} + \sqrt{1- \alpha_{t}\alpha_{t-1} \cdots \alpha_{1}} \epsilon_{0} \\
+    &= \sqrt{\bar{\alpha}_{t}}x_{0} + \sqrt{1-\bar{\alpha}_{t}}\epsilon_{0}
+\end{align}
+$$
 
+여기서 1번 부분이 어떻게 2번으로 가는지는, 다음과 같다. 
+$$
+\begin{align}
+    X &= \sqrt{\alpha_{t}(1-\alpha_{t-1})}\epsilon_{t-2} \sim \mathcal{N}(X; 0, \alpha_{t}(1-\alpha_{t-1})) \\
+    Y &= \sqrt{1-\alpha_{t}}\epsilon_{t-1} \sim \mathcal{N}(0, 1-\alpha_{t}) 
+\end{align}
+$$
+
+$\mathcal{N}(\mu_{1}, \sigma_{1}^{2})$ , $\mathcal{N}(\mu_{2}, \sigma_{2}^{2})$ 이 두 가우시안 분포를 더하면, $\mathcal{N}(\mu_{1} + \mu_{2}, \sigma_{1}^{2} + \sigma_{2}^{2})$ 의 분포가 되는데, 이를 위에 적용하면, 다음과 같다. 
+
+$$
+\begin{align}
+    X + Y &\sim \mathcal{N}(0 + 0, \alpha_{t}(1-\alpha_{t-1}) + 1-\alpha_{t}) \\
+    &= \mathcal{N}(0, 1-\alpha_{t}\alpha_{t-1}) \\
+    &= 0 + \sqrt{1-\alpha_{t}\alpha_{t-1}} \epsilon \quad (\epsilon \sim \mathcal{N}(0, \mathbf{I}))
+\end{align}
+$$
 
 ### Eq. 1 NLL ELBO
 
@@ -257,15 +297,64 @@ $$
 
 ### Eq. 2 q_posterior
 
+$$
+\begin{align}
+    q(x_{t-1}|x_{t},x_{0}) &= \frac{q(x_{t}|x_{t-1},x_{0})q(x_{t-1}|x_{0})}{q(x_{t}|x_{0})} \\
+    &= \frac{\mathcal{N}(x_{t}; \sqrt{\alpha_{t}}x_{t-1},(1-\alpha_{t})\mathbf{I}) \cdot \mathcal{N}(x_{t-1}; \sqrt{\bar{\alpha}_{t-1}}x_{0}, (1- \bar{\alpha}_{t-1})\mathbf{I})}{\mathcal{N}(x_{t}; \sqrt{\bar{\alpha}_{t}}x_{0}, (1- \bar{\alpha}_{t})\mathbf{I})} \\
+    &= \frac{\frac{1}{\sqrt{2\pi(1-\alpha_{t})}} \exp\left(-\frac{(x_{t} - \sqrt{\alpha_{t}}x_{t-1})^{2}}{2(1-\alpha_{t})} \right) \cdot \frac{1}{\sqrt{2\pi(1-\bar{\alpha}_{t-1})}} \exp\left(-\frac{(x_{t-1} - \sqrt{\bar{\alpha}_{t-1}}x_{0})^{2}}{2(1-\bar{\alpha}_{t-1})}\right)}{\frac{1}{\sqrt{2\pi(1-\bar{\alpha}_{t})}} \exp\left(-\frac{(x_{t} - \sqrt{\bar{\alpha}_{t}}x_{0})^{2}}{2(1-\bar{\alpha}_{t})} \right)} \\
+    &\propto \exp\left(-\frac{1}{2} \left[ \frac{(x_{t} - \sqrt{\alpha_{t}}x_{t-1})^{2}}{1-\alpha_{t}} + \frac{(x_{t-1} - \sqrt{\bar{\alpha}_{t-1}}x_{0})^{2}}{1-\bar{\alpha}_{t-1}} - \frac{(x_{t} - \sqrt{\bar{\alpha}_{t}}x_{0})^{2}}{1-\bar{\alpha}_{t}} \right]\right) \\
+    &\cdots \quad \text{$x_{t-1}$ 과 관련없는 항은 상수로 취급하여, 비례식에서 무시한다.} \\
+    &\propto \exp \left( -\frac{1}{2} \left[ \frac{(x_t - \sqrt{\alpha_t}x_{t-1})^2}{1-\alpha_t} + \frac{(x_{t-1} - \sqrt{\bar{\alpha}_{t-1}}x_0)^2}{1-\bar{\alpha}_{t-1}} \right] \right) \\
+    &= \exp \left( -\frac{1}{2} \left[\frac{x_{t}^{2} - 2\sqrt{\alpha_t}x_{t}x_{t-1} + \alpha_{t}x_{t-1}^{2}}{1-\alpha_t} + \frac{ x_{t-1}^{2} - 2\sqrt{\bar{\alpha}_{t-1}}x_{t-1}x_{0} + \bar{\alpha}_{t-1}x_{0}^{2} }{1-\bar{\alpha}_{t-1}}  \right] \right) \\
+    &= \exp \left( -\frac{1}{2} \left[ \left( \frac{\alpha_{t}}{1-\alpha_{t}} + \frac{1}{1 - \bar{\alpha}_{t-1}} \right)x_{t-1}^{2} + 2\left( \frac{\sqrt{\alpha_{t}}x_[t]}{1-\alpha_{t}} + \frac{\sqrt{\bar{\alpha}_{t-1}}x_{0}}{1-\bar{\alpha}_{t-1}} \right) x_{t-1} + C  \right] \right) \\
+    &\cdots \quad \text{마찬가지로 $x_{t-1}$ 과 관련없는 항은 상수로 취급하여 $C$ 로 나타낸다.} \\
+    &\cdots \quad \text{$Ax^{2} + 2Bx + C$ 의 형태가 되어, 가우시안 분포의 성질에 따라 $A$ 가 분산의 역수 $\frac{1}{\sigma^{2}}$ 가 되고, $\frac{B}{A}$ 가 평균이 된다. } \\
+    \\
+    \tilde{\beta}_{t} &= \frac{1}{\frac{\alpha_{t}}{1-\alpha_{t}} + \frac{1}{1 - \bar{\alpha}_{t-1}}}  \\
+    &= \frac{1 - \bar{\alpha}_{t-1} - \alpha_{t} + \bar{\alpha}_{t}}{\alpha_{t} - \bar{\alpha}_{t} + 1 - \alpha_{t}} \\
+    &= \frac{(1-\alpha_{t}) - (1-\alpha_{t})\bar{\alpha}_{t-1}}{1 - \bar{\alpha}_{t}} \\
+    \therefore &= \frac{(1-\alpha_{t})(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_{t}} \\
+    \\
+    \tilde{\mu}_t(x_t, x_0) &= \left( \frac{(1-\alpha_t)(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t} \right) \left( \frac{\sqrt{\alpha_t}}{1-\alpha_t}x_t + \frac{\sqrt{\bar{\alpha}_{t-1}}}{1-\bar{\alpha}_{t-1}}x_0 \right) \\
+    \therefore &= \frac{\sqrt{\alpha_{t}}(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}x_{t} + \frac{(1-\alpha_t)\sqrt{\bar{\alpha}_{t-1}} }{1-\bar{\alpha}_{t-1}}x_0 
+\end{align}
+$$
+
+...손가락 아프다..
 
 ### Eq. 3 L based mean
 
+$$
+\mathbb{E}_{q} \left[ D_{KL}(q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) \ || \ p_{\theta}(\mathbf{x}_{t-1}|\mathbf{x}_{t})) \right]
+$$
+
+여기서 두 가우시안 분포에 대한 KL-divergence는 다음과 같이 계산된다. 
+
+$$
+D_{KL}(\mathcal{N}_{1} || \mathcal{N}_{2}) = \frac{1}{2} \left[ \text{tr}(\Sigma_{2}^{-1}\Sigma_{1}) + (\mu_{1} - \mu_{2})^{T}\Sigma_{2}^{-1}(\mu_{1} - \mu_{2}) - d + \log\frac{|\Sigma_{2}|}{|\Sigma_{1}|} \right]
+$$
+
+$\mu\_{1} = \tilde{\mu}\_{t}$ , $\mu\_{2} = \mu\_{\theta}$ , $\Sigma\_{1} = \tilde{\beta}\_{t}\mathbf{I}$ , $\Sigma\_{2} = \sigma\_{t}^{2}\mathbf{I}$ 를 위 식에 대입하면, 다음과 같다.  
+
+
+$$
+\begin{align}
+    D_{KL}(q || p_{\theta}) &= \frac{1}{2} \left[ \text{tr}(\frac{\tilde{\beta}_{t}}{\sigma_{t}^{2}}) + (\tilde{\mu}_{t} - \mu_{\theta})^{T} (\frac{1}{\sigma_{t}^{2}}\mathbf{I}) (\tilde{\mu}_{t} - \mu_{\theta}) - d + \log\frac{|\sigma_{t}^{2}\mathbf{I}|}{|\tilde{\beta}_{t}\mathbf{I}|} \right] \\
+    &\cdots \quad (\text{$\theta$와 관련 없는 항은 상수로 취급한다. }) \\
+    &= \frac{1}{2} \cdot \frac{1}{\sigma_{t}^{2}} (\tilde{\mu}_{t} - \mu_{\theta})^{T}(\tilde{\mu}_{t} - \mu_{\theta}) + C \\
+    \therefore &= \frac{1}{2\sigma^{2}} \left|\left| \tilde{\mu}_{t} - \mu_{\theta} \right|\right|^{2}
+\end{align}
+
+$$
 
 ### Eq. 4 reparameterization with epsilon
 
+미안하다. 귀찮아서 생략하겠다. 대신 귀여운 도로롱을 주겠다.  
+
+![DORORUN](https://i.imgur.com/zldQCVa.gif)
 
 ### Eq. 6 reconstruction with epsilon-approximator
 
-~~추가 중~~
+![DORORUN](https://i.imgur.com/zldQCVa.gif)
 
 
