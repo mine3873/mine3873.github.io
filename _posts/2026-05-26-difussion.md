@@ -264,8 +264,8 @@ $$
 여기서 1번 부분이 어떻게 2번으로 가는지는, 다음과 같다. 
 $$
 \begin{align}
-    X &= \sqrt{\alpha_{t}(1-\alpha_{t-1})}\epsilon_{t-2} \sim \mathcal{N}(X; 0, \alpha_{t}(1-\alpha_{t-1})) \\
-    Y &= \sqrt{1-\alpha_{t}}\epsilon_{t-1} \sim \mathcal{N}(0, 1-\alpha_{t}) 
+    X &= \sqrt{\alpha_{t}(1-\alpha_{t-1})}\epsilon_{t-2} \sim \mathcal{N}(X; 0, \alpha_{t}(1-\alpha_{t-1})\mathbf{I}) \\
+    Y &= \sqrt{1-\alpha_{t}}\epsilon_{t-1} \sim \mathcal{N}(0, (1-\alpha_{t})\mathbf{I}) 
 \end{align}
 $$
 
@@ -273,8 +273,8 @@ $\mathcal{N}(\mu_{1}, \sigma_{1}^{2})$ , $\mathcal{N}(\mu_{2}, \sigma_{2}^{2})$ 
 
 $$
 \begin{align}
-    X + Y &\sim \mathcal{N}(0 + 0, \alpha_{t}(1-\alpha_{t-1}) + 1-\alpha_{t}) \\
-    &= \mathcal{N}(0, 1-\alpha_{t}\alpha_{t-1}) \\
+    X + Y &\sim \mathcal{N}(0 + 0, (\alpha_{t}(1-\alpha_{t-1}) + 1-\alpha_{t})\mathbf{I}) \\
+    &= \mathcal{N}(0, (1-\alpha_{t}\alpha_{t-1})\mathbf{I}) \\
     &= 0 + \sqrt{1-\alpha_{t}\alpha_{t-1}} \epsilon \quad (\epsilon \sim \mathcal{N}(0, \mathbf{I}))
 \end{align}
 $$
