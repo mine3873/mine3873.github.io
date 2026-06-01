@@ -1,8 +1,8 @@
 ---
 title: "Generative Modeling by Estimating Gradients of the Data Distribution"
 date: 2026-05-31 19:27:00 +0900
-categories: [DL]
-tags: [dl, generative-model,] 
+categories: [DL, Generative-model]
+tags: [dl, generative-model, score-based,] 
 math: true
 mermaid: true
 ---
@@ -10,6 +10,7 @@ mermaid: true
 # Generative Modeling by Estimating Gradients of the Data Distribution
 
 > [Generative Modeling by Estimating Gradients of the Data Distribution](https://arxiv.org/pdf/1907.05600)
+{: .prompt-info}
 
 ## Introduction
 
@@ -17,16 +18,17 @@ mermaid: true
 
 한번 드가보자. 
 
-![DORORUN](https://i.imgur.com/zldQCVa.gif)
+![DORORUN](https://i.imgur.com/zldQCVa.gif){: .normal}
 
 ## Score-based Generative Modeling
 
 일단 먼저 Score라는게 무엇이냐, 임의의 분포 $p(x)$ 의 Score은 $\nabla_{x} \log p(x)$ 로 정의되며, $\log p(x)$ 의 값이 가장 큰 방향, 즉, 최빈값(Mode)를 향하는 방향을 가리키는 벡터장을 의미한다. 
 
 ![쌈뽕한 Score img](https://blog.christianperone.com/wp-content/uploads/2024/11/gaussian_score_animation-1.gif)
+_벡터장 예시_
 
-위 사진은 이 형님의 블로그에서 쌈뽕해서 가져와봤다...  
-[https://blog.christianperone.com/2024/11/the-geometry-of-data-part-ii/](https://blog.christianperone.com/2024/11/the-geometry-of-data-part-ii/)
+> 위 사진은 이 형님의 블로그에서 쌈뽕해서 가져와봤다... [https://blog.christianperone.com/2024/11/the-geometry-of-data-part-ii/](https://blog.christianperone.com/2024/11/the-geometry-of-data-part-ii/)
+{: .prompt-info}
 
 아무튼튼 이러한 Score 값, 즉, 로그 확률 밀도의 최빈값을 향하는 기울기를 사용하여 기존 분포 $p(x)$ 를 유추할 수 있는데, 자세하게는 [여기](#score-matching)를 확인하자...  
 
@@ -279,7 +281,7 @@ $$
 
 내가 잘못 이해한게 있을 수도 있는데, 일단 계속 공부해보다가 엥? 이다 싶으면 다시 수정하겠다..
 
-역시나 의식의 흐름대로 작성하다보니 글 흐름이 거시기한데.. 내가 보기에 이해되면 장땡이니까 상관없다. 그래도 노력은 해보겠다.  
+역시나 의식의 흐름대로 작성하다보니 글 흐름이 거시하고.. 가독성은 개나 줘버렸는데.. 내가 보기에 이해되면 장땡이니까 상관없다. 그래도 혹시나 미안하다. 노력은 해보겠다..
 
 
 

@@ -1,8 +1,8 @@
 ---
 title: "Denoising Diffusion Probabilistic Models"
 date: 2026-05-27 19:27:00 +0900
-categories: [DL]
-tags: [dl, ddpm, generative-model,] 
+categories: [DL, Generative-model]
+tags: [dl, diffusion, generative-model,] 
 math: true
 mermaid: true
 ---
