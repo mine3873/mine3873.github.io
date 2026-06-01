@@ -138,9 +138,9 @@ $\epsilon > 0$, $T < \infty$ 의 경우엔 그만큼 오차가 심해질텐데, 
 
 그러니까.. $\nabla_{x} \log p_{\text{data}}(x) = \frac{\nabla_{x} p_{\text{data}}}{p_{\text{data}}}$ 로 정의되는데, 이 매니폴드와 멀리 떨어지면 $p_{\text{data}} \approx 0$ 이 되어서, $\frac{\nabla_{x} p_{\text{data}}}{p_{\text{data}}}$ 이게 정의가 되지 않는 것이다.  
 
-..아무튼 다른 문제는 앞서 살펴본 우리의 목적함수에 대해서, $p_{\text{data}}$ 의 서포트가 전체 공간일 때만 일관된 Score 값을 제공하며, 저차원 매니폴드에 있다면 그렇지 않다는 것이다. 
+..아무튼 다른 문제는 앞서 살펴본 우리의 목적함수에 대해서, $p_{\text{data}}$ 의 Support 가 전체 공간일 때만 일관된 Score 값을 제공하며, 저차원 매니폴드에 있다면 그렇지 않다는 것이다. 
 
-여기서 분포의 서포트는, $p(x) > 0$, 즉, 데이터가 존재하는 영역을 말한다. 여기서 매니폴드는 이러한 서포트가 가지는 저차원 기하학 구조를 말한다... ~~아 뭔가 딱 감올 것 같은데 거시기하다. 나중에 제대로 다뤄보겠다..~~
+여기서 분포의 Support 는, $p(x) > 0$, 즉, 데이터가 존재하는 영역을 말한다. 여기서 매니폴드는 이러한 Support 가 가지는 저차원 기하학 구조를 말한다... ~~아 뭔가 딱 감올 것 같은데 거시기하다. 나중에 제대로 다뤄보겠다..~~
 
 ![Fig1](https://i.imgur.com/niKs52k.png)
 
@@ -150,7 +150,136 @@ $\epsilon > 0$, $T < \infty$ 의 경우엔 그만큼 오차가 심해질텐데, 
 
 ### Low data density regions 
 
-~~추가 중~~
+두 번째 문제는, 데이터 자체가 부족한 부분의 경우, 이 부분의 Score 값의 부족으로, 정확한 Score matching 을 수행하기 어렵다는 것이다.  
+
+![score on low density](https://i.imgur.com/c5M59Q4.png)
+
+위 사진은 논문의 저자들이 이를 확인하기 위해 $p_{\text{data}} = \frac{1}{5}\mathcal{N}((-5,-5), \mathbf{I}) + \frac{4}{5}\mathcal{N}((5,5), \mathbf{I})$ 형태의 두 가우시안의 혼합 분포의 Score 을 추정한 것이다. 왼쪽이 실제 $p_{\text{data}}$ 이고, 오른쪽이 우리가 추정한 $s_{\theta}(x)$ 이다. 그리고 사진에서 주황색 영역이 데이터가 존재하는 부분으로, 색이 진할수록 높은 밀도를 가진다. 오른쪽 사진을 보면 알 수 있듯이, 데이터가 밀집된 빨간 점선 내부의 영역에서는 Score 가 나름 잘 추정됐지만, 빨간 점선 외부에서는 Score 들이 왼쪽처럼 밀집된 곳으로 바로 향하지 않고 약간 틀어진 곳을 향하거나, 중앙부분에서 $0$ 에 가까워지는 식으로 안정적이지 못한 것을 볼 수 있다.  
+
+앞서 목적함수를 다시 상기해보면, 
+
+$$
+L = \frac{1}{2} \mathbb{E}_{p_{\text{data}}(x)}\left[\left|\left| s_{\theta}(x) - \nabla_{x} \log p_{\text{data}}(x)  \right|\right|_{2}^{2}\right]
+$$
+
+결국 목적함수는 $p_{\text{data}}(x)$ 에 대해서만 기댓값이 걸려있다. 데이터가 거의 존재하지 않는 주황영역 밖 부분 $p_{\text{data}}(x) \approx 0$ 은 예측한 Score 값이 틀리든 말든 오차가 거의 $0$ 으로 계산된다. 즉, 모델 $s_{\theta}$ 은 이런 데이터가 거의 없는 부분에서의 Score 예측이 전체 손실에 기별도 안가니 그냥 학습을 안하게 되는 것이다.  
+
+또한, Langevin dynamics 는 앞선 예시의 혼합 분포에서, 각 분포의 가중치를 반영하지 못한다. 그러니까 앞선 가우시안 분포가 $p_{\text{data}} = \pi p_{1}(x) + (1-\pi)p_{2}(x)$ 이런 형태였고, 여기서 $p_{1}(x), p_{2}(x)$ 는 Support 영역이 겹치지 않는 정규화된 분포라고 하자.  
+
+$p_{1}(x)$ 의 Support에서의 Score 값을 계산해보면, $\nabla_{x} \log p_{\text{data}}(x) = \nabla_{x}(\log \pi + \log p_{1}(x)) = \nabla_{x} \log p_{1}(x)$ 이 되고, $p_{2}(x)$ 의 Support 에서 Score 값은 $\nabla_{x} \log p_{\text{data}}(x) = \nabla_{x}(\log (1-\pi) + \log p_{2}(x)) = \nabla_{x} \log p_{2}(x)$ 가 된다. 즉, 두 분포의 가중치 $\pi$ 가 반영이 되지 않은 것이다. 
+
+앞선 예시를 다시 살펴보면,
+
+![score on low density](https://i.imgur.com/c5M59Q4.png)
+
+두 분포 $p_{1}(x), p_{2}(x)$ 의 Support 사이에 low density region 이 위치하는 것을 볼 수 있는데, 이러한 low density region 이 이러한 두 분포의 가중치 반영을 더 방해한다고 할 수 있다. 앞서 Langevin dynamics 식에서,
+
+$$
+\tilde{x}_{t} = \tilde{x}_{t-1} + \frac{\epsilon}{2}\nabla_{x} \log p(\tilde{x}_{t-1}) + \sqrt{\epsilon}z_{t}
+$$
+
+여기서 $\sqrt{\epsilon}z_{t}$ 이 항을 통해서 최빈값에 도착하더라도 계속해서 전체 공간을 돌아다닐 수 있게끔 하는데, 다시 말해서 한 최빈값에 도착하더라도 계속해서 움직이며 나머지 다른 최빈값으로도 이동할 수 있게끔한다. 이 과정으로 각 분포의 가중치를 반영할 수 있는데, 다른 최빈값으로 이동하는 과정에 low density region 에 다다르게 되면, 이 영역을 가로질러 지나가는게 굉장히 어렵기 때문이다. 물론 기적의 확률로 지나칠 수도 있기야 하겠지만, 이를 위해선 매우 작은 학습률 ($\epsilon \to 0$) 과 겁~나게 많은 스텝 ($T \to \infty$) 가 요구될 것이다. 
+
+![exp with low density](https://i.imgur.com/OnOEZf5.png)
+
+위 사진은 앞선 예시 $p_{\text{data}} = \frac{1}{5}\mathcal{N}((-5,-5), \mathbf{I}) + \frac{4}{5}\mathcal{N}((5,5), \mathbf{I})$ 에 대해서 테스트를 해본건데, 첫번째 사진이 실제 $p_{\text{data}}$ 이고, 두번째가 Langevin dynamics 를 통해 샘플링을 진행한 결과이다. 사진을 보면 알 수 있듯이, $p_{\text{data}}$ 에서의 두 최빈값의 가중치를 Langevin dynamics 에서 반영을 하지 않고 있다. 물론 앞서 말했듯이 $\epsilon \to 0$, $T \to \infty$ 이면 가능이야 하겠지만.. 엄청 오래걸릴 것이다..
+
+## Noise Conditional Score Networks, NCSN
+
+![야호](https://i.imgur.com/vQFG04q.gif)
+
+앞에서 솰라솰라 어쩌고 저쩌고 했는데, 그냥 가우시안 노이즈를 추가하는 걸로 해결가능하다.  
+
+앞서 살펴봤던 manifold hypothesis 문제에 대해선 가우시안 노이즈를 전체 공간에 대해 추가하면, Score 들이 잘 정의되어 학습이 안정적이게 된다는 것을 확인했다 ($p_{\text{data}} > 0$ 이 되므로).  
+
+low density region 에 대해서도 충분히 큰 가우시안 노이즈가 추가되면 Low density region이 그만큼 영역이 작아질 것이고, 최빈값 부근은 델타함수같은 모양에서 좀더 완만한 종모양의 형태가 되어 뭐랄까...살짝 기압이 내려가는 느낌이랄까, 그냥 밀도가 낮아지게 된다. 그러면 Score 값 추정도 전체 공간에서 안정적으로 될 것이다.  
+
+그래서 이 논문에선 이러한 섞인 노이즈의 양에 따라 여러 레벨로 나누고, 각 레벨의 노이즈를 조건부로 두는 하나의 모델을 학습한다 (DDPM 에서 각 스템 $t$ 에 개별 모델을 학습하지 않는 것처럼 각 노이즈 레벨에 따른 개별 모델들이 아닌 파라미터를 공유하는 하나의 모델을 학습한다).
+
+샘플링 과정은 이에 맞춰서 가장 높은 레벨의 노이즈가 섞인 분포부터 Langevin dynamics 과정을 시작해서, 점차 노이즈 레벨을 낮춰가며 원래 분포애 가까워질 때까지 이를 반복한다. 이를 Annealing Langevin dynamics 라고 하는데, 좀따 자세히 알아보자. 
+
+### Training 
+
+먼저 노이즈가 섞인 데이터 분포를 다음과 같이 정의한다.
+
+$$
+q_{\sigma}(\tilde{x}) = \int p_{\text{data}}(x)q_{\sigma}(\tilde{x}|x) \, dx = \int p_{\text{data}}(x) \mathcal{N}(\tilde{x} | x, \sigma^{2}\mathbf{I}) \, dx
+$$
+
+이때 $\set{\sigma\_{i}}\_{i=1}^{L}$ 은 노이즈 레벨로, $\sigma\_{1} > \sigma{2} > \cdots > \sigma\_{L}$ 을 만족한다. $\sigma\_{1}$ 은 앞서 살펴본 Manifold Hypothesis 와 Low Density Regions 문제를 해결할 수 있을 정도로 충분히 크게 설정하고, $\sigma\_{L}$ 은 기존 데이터의 영향을 최대한 덜 주는 정도로 설정된다. 
+
+Denoising Score Matching 의 경우, 각 $\sigma_{i}$ 에 대해 목적함수는 다음과 같다. 
+
+$$
+\begin{align}
+    \ell(\theta; \sigma_{i}) &= \frac{1}{2} \mathbb{E}_{p_{\text{data}}(x)}\mathbb{E}_{\tilde{x} \sim \mathcal{N}(\tilde{x} | x, \sigma_{i}^{2}\mathbf{I})} \left[\left|\left|s_{\theta}(\tilde{x}, \theta) - \nabla_{\tilde{x}} \log q_{\sigma_{i}}(\tilde{x}|x)  \right|\right|_{2}^{2}  \right] \\
+    &= \frac{1}{2} \mathbb{E}_{p_{\text{data}}(x)}\mathbb{E}_{\tilde{x} \sim \mathcal{N}(\tilde{x} | x, \sigma_{i}^{2}\mathbf{I})} \left[\left|\left|s_{\theta}(\tilde{x}, \theta) + \frac{\tilde{x} - x}{\sigma_{i}^{2}}  \right|\right|_{2}^{2}  \right]
+\end{align}
+$$
+
+모든 $\set{\sigma_{i}}_{i=1}^{L}$ 에 대한 목적함수는 다음과 같다. 
+
+$$
+\mathcal{L}(\theta; \set{\sigma_{i}}_{i=1}^{L}) = \frac{1}{L} \sum_{i=1}^{L} \lambda(\sigma_{i}) \ell(\theta; \sigma_{i})
+$$
+
+이때 $\lambda(\sigma_{i}) > 0$ 는 각 $\ell(\theta; \sigma_{i})$ 에 대한 가중치로, 논문에서는 $\lambda(\sigma_{i}) = \sigma_{i}^{2}$ 로 설정하였는데, 이 형님들이 $\lambda(\sigma\_{i}) \ell(\theta; \sigma\_{i})$ 의 값이 모든 $\set{\sigma\_{i}}\_{i=1}^{L}$ 값에 대해서 어느정도 비슷한 크기로 설정하는게 이상적이라고 생각하셨다. 그래서 살펴본 결과 이 손실 함수가 최적이 될 때 $\|\|s\_{\theta}(\tilde{x}, \theta)\|\|\_{2} \propto \sigma^{-1}$ 임을 알아냈고, $\lambda(\sigma_{i}) = \sigma\_{i}^{2}$ 로 설정해서, 
+
+$$
+\lambda(\sigma_{i}) \ell(\theta; \sigma_{i}) = \frac{1}{2} \mathbb{E}_{p_{\text{data}}(x)}\mathbb{E}_{\tilde{x} \sim \mathcal{N}(\tilde{x} | x, \sigma_{i}^{2}\mathbf{I})} \left[\left|\left|\sigma s_{\theta}(\tilde{x}, \theta) + \frac{\tilde{x} - x}{\sigma_{i}}  \right|\right|_{2}^{2}  \right]
+$$
+
+이 되게끔 했다. 이렇게 하면 $\frac{\tilde{x} - x}{\sigma\_{i}} \sim \mathcal{N}(0, \mathbf{I})$, $\|\sigma s\_{\theta}(\tilde{x}, \theta)\|\_{2} \propto 1$ 이 되어, $\lambda(\sigma\_{i}) \ell(\theta; \sigma\_{i})$ 가 $\sigma\_{i}$ 에 의존하지 않고, 비슷비슷한 크기를 가지게 된다. 이를 통해서 특정 노이즈 레벨에서만 학습을 집중하지 않고, 고르게 학습을 진행할 수 있게 된다. 
+
+### Annealed Langevin dynamics
+
+앞서 샘플링을 Annealed Langevin dynamics 를 사용한다고 했는데, 과정은 다음과 같다. 
+
+![Annealed Langevin dynamics](https://i.imgur.com/lJ8MloK.png)
+
+먼저 앞선 Langevin Dynamics와 거의 동일하게, $\epsilon > 0$, $T$ 는 각 레벨에서의 Langevin dynamics 과정의 단계 수, 그리고 초깃값 $\tilde{x}_{0} \sim \pi(x)$ 로 정의된다.  
+
+먼저 $\sigma_{1}$ 레벨에서 시작해서, 다음과 같이 위치 갱신을 $T$ 번 반복한다. 
+
+$$
+\tilde{x}_{t} = \tilde{x}_{t-1} + \frac{\alpha_{i}}{2} s_{\theta}(\tilde{x}_{t-1}, \sigma_{i}) + \sqrt{\alpha_{i}} z_{t}
+$$
+
+이때 $z\_{t} \sim \mathcal{N}(0, \mathbf{I})$이고, 기존 Langevin Dynamics의 학습률이었던 $\epsilon$ 이 $\alpha_{i}$ 로 바뀌었는데, 이 새로운 학습률은 $\alpha_{i} = \frac{\epsilon \cdot \sigma_{i}^{2}}{\sigma_{L}^{2}}$ 로 정의된다. 즉, $\sigma_{1}$ 레벨에서의 초기 학습률이 매우 크지만, 노이즈 레벨이 낮아질수록 학습률이 작아지며, 최종 $\sigma\_{L}$ 레벨에선 학습률이 $\epsilon$ 이 되어 정교해진다.
+
+아무튼 이렇게 초깃값 $\tilde{x}\_{0}$ 에서 $\tilde{x}\_{T}$ 까지, $\sigma\_{1}$ 레벨에서 $T$ 번동안 Langevin dynamics 를 진행하여 도착한 최종 위치가 $\tilde{x}\_{T}$ 가  다음 $\sigma\_{2}$ 레벨에서의 초기 위치 $\tilde{x}\_{0}$ 가 되고, 학습률을 다시 정의하여 같은 과정을 반복한다. 이렇게 반복하고 반복해서, $\sigma\_{L}$ 레벨에서의 $\tilde{x}\_{T}$ 가 Annealed Langevin dynamics 알고리즘이 생성한 최종 샘플이 된다. 즉, $q\_{\sigma\_{L}}(\tilde{x}\_{T}) \approx p\_{\text{data}}(\tilde{x})$ 이 된다.  
+
+이렇게 큰 노이즈 레벨 부터 시작해서 점차 노이즈 레벨을 낮춰가며 Langevin dynamics 을 수행하면, 모델이 추정하는 Score 값이 더 정확해지고, 앞서 두 최빈값의 가중치를 반영하는걸 더 빨리 수행할 수 있는데, $q\_{\sigma\_{i-1}}(x)$ 의 High density regions 에서 샘플링될 가능성이 크다는건, $q\_{\sigma\_{i}}(x)$ 에서도 High density regions 에서 샘플링될 가능성이 크다는 것과 같다. 왜냐하면 $q\_{\sigma\_{i-1}}(x) \approx q\_{\sigma\_{i}}(x)$ 와 같이 두 분포는 아주 미세한 가우시안 노이즈의 차이만 있기 때문이다. $q\_{\sigma\_{i-1}}(x)$ 가 High density regions 에 있다는건 그만큼 정확한 Score 값을 반영하여 Langevin dynamics 을 통해 정확한 $\tilde{x}_{T}$ 를 찾는다는 것이고, 이는 $q\_{\sigma\_{i}}(x)$ 의 초깃값으로서 알맞다는 것이다. 
+
+여기서 학습률을 다르게도 정의할 수 있지만, 논문에서 $\alpha_{i} = \frac{\epsilon \cdot \sigma_{i}^{2}}{\sigma_{L}^{2}} \propto \sigma_{i}^{2}$ 로 정의한 이유는, SNR(Signal-to-Noise Ratio) $\frac{\alpha_{i}s_{\theta}(x,\sigma_{i})}{2\sqrt{\alpha_{i}}z}$ 를 일정하게 맞추기 위해서이다. 
+
+SNR은 앞서 살펴본 $\tilde{x}\_{t} = \tilde{x}\_{t-1} + \frac{\alpha\_{i}}{2} s\_{\theta}(\tilde{x}\_{t-1}, \sigma\_{i}) + \sqrt{\alpha\_{i}} z\_{t}$ 의 식에서 2, 3번째 항의 비율임을 알 수 있는데, 전자가 신호, 후자를 노이즈(잡음) 으로 생각할 수 있다. 
+
+$$
+\mathbb{E}\left[\left|\left| \frac{\alpha_{i}s_{\theta}(x,\sigma_{i})}{2\sqrt{\alpha_{i}}z} \right|\right|_{2}^{2}\right] \approx \mathbb{E}\left[\frac{\alpha_{i} \|s_{\theta}(x,\sigma_{i})\|_{2}^{2}}{4} \right] \propto \frac{1}{4} \mathbb{E}\left[\|\sigma_{i} s_{\theta}(x,\sigma_{i})\|_{2}^{2} \right]
+$$
+
+여기서 앞서서 손실 함수가 최적이 될 때 $\|\|s\_{\theta}(\tilde{x}, \theta)\|\|\_{2} \propto \sigma^{-1}$ 였음을 여기에 적용하면, 
+
+$$
+\mathbb{E}\left[\|\sigma_{i} s_{\theta}(x,\sigma_{i})\|_{2}^{2} \right] \propto 1 \implies \left|\left| \frac{\alpha_{i}s_{\theta}(x,\sigma_{i})}{2\sqrt{\alpha_{i}}z} \right|\right|_{2} \propto \frac{1}{4}
+$$
+
+즉, SNR이 $\sigma_{i}$ 에 의존하지 않는다. 다시 말해서 노이즈 레벨에 따라 SNR이 달라지지 않아, 특정 노이즈에선 최빈값으로 일직선으로 가고 다른 특정 노이즈에선 최빈값으로 이동하지 않고 사방으로 짱구마냥 날뛰지 않고, 모든 노이즈에 대해서 이 두 힘(?) 을 일정한 비율로 고정하여 일관된 텐션으로 이동할 수 있는 것이다. 
+
+![exp with low density](https://i.imgur.com/OnOEZf5.png)
+
+위 사진은 앞선 $p_{\text{data}} = \frac{1}{5}\mathcal{N}((-5,-5), \mathbf{I}) + \frac{4}{5}\mathcal{N}((5,5), \mathbf{I})$ 의 예시를 다시 가져온건데, 3번째 사진이 바로 Annealed Langevin dynamics 를 통해 샘플링한 결과이다. 보면 일반적인 Langevin dynamics 와 달리, 두 최빈값의 가중치를 어느정도 야무지게 반영하고 있음을 알 수 있다. 
+
+## 주절주절 찌라시
+
+그냥 개념 공부만 할려고 본거라서 따로 구현은 안했다. 절대 귀찮은게 아니다. 
+
+![바이바이](https://i.imgur.com/vFL4Fs1.png)
+
+내가 잘못 이해한게 있을 수도 있는데, 일단 계속 공부해보다가 엥? 이다 싶으면 다시 수정하겠다..
+
+역시나 의식의 흐름대로 작성하다보니 글 흐름이 거시기한데.. 내가 보기에 이해되면 장땡이니까 상관없다. 그래도 노력은 해보겠다.  
 
 
 
