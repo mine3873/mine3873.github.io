@@ -96,13 +96,180 @@ $$
 - $\mathbb{E}[\|\|\nabla\_{x} \log p\_{\sigma\_{i}} (\tilde{x}\|x)\|\|\_{2}^{2}] \propto \frac{1}{\sigma\_{i}^{2}}$
 - $\mathbb{E}[\|\|\nabla\_{x} \log p\_{\alpha\_{i}} (\tilde{x}\|x)\|\|\_{2}^{2}] \propto \frac{1}{1-\alpha\_{i}}$  
 
-이를 통해 노이즈 레벨 $i$ 에 상관없이 각 손실함수 $\ell(\theta; \sigma\_{i}), \ell(\theta; i)$ 는 모두 일정한 크기를 가진다. 
+이를 통해 노이즈 레벨 $i$ 에 상관없이 각 손실함수 $\ell(\theta; \sigma\_{i}), \ell(\theta; i)$ 는 모두 같은 비중으로 모델이 다룰 것이다.
 
-### Score-based Generative Modeling With SDEs
+## Score-based Generative Modeling With SDEs
 
 | ![힐링타임](https://i.imgur.com/vQFG04q.gif)_잠시 힐링 좀 하겠다 1_ | ![힐링타임](https://i.imgur.com/vQFG04q.gif)_잠시 힐링 좀 하겠다 2_ | ![힐링타임](https://i.imgur.com/vQFG04q.gif)_잠시 힐링 좀 하겠다 3_ |
 | :-----------------------------------------------------------------: | :-----------------------------------------------------------------: | :-----------------------------------------------------------------: |
 | ![힐링타임](https://i.imgur.com/vQFG04q.gif)_잠시 힐링 좀 하겠다 4_ | ![힐링타임](https://i.imgur.com/vQFG04q.gif)_잠시 힐링 좀 하겠다 5_ | ![힐링타임](https://i.imgur.com/vQFG04q.gif)_잠시 힐링 좀 하겠다 6_ |
+
+앞선 노이즈를 추가해가는 과정을 일반화해서, $t \in [0,T]$ 의 연속형의 $t$ 에 따라 연속적으로 증가해가는 과정으로 일반화할 수 있다.
+
+이러한 연속적인 시간(단계)의 흐름에서 데이터 $x$ 의 변화량을 **Stochastic Differential Fquations, SDEs**라는 것으로 정의하는데. SDEs 란 단순히 기존 미분방정식에서 하나 이상의 확률적 샘플링이 요구되는 항이 포함된 것인데, 아무튼 알아보자. 
+
+### Perturbing Data With SDEs
+
+일단 들어가기 전에 $x(t)$ 를 $t$ 에서의 데이터, $p\_{t}(x)$ 를 $x(t)$ 의 확률 밀도, $p\_{st}(x(t)\|x(s))$ 를 $x(s)$ 에서 $x(t)$ 로의 전이 커널로 나타낸다.  
+
+데이터 분포의 샘플 $x(0) \sim p_{0}$ 과, 완전히 Noisy 해지는 사전 분포의 샘플 $x(T) \sim p_{T}$ 에 대해서, 기존 Diffusion Process $\set{x(t)}\_{t=0}^{T}$ 를 연속형 $t \in [0,T]$ 에서 다시 정의해야 하는데 이를 다음과 같이 이토(Itô) SDE 로 나타낼 수 있다. 
+
+$$
+dx = f(x,t)dt + g(t)dw
+$$
+
+여기서 $w$ 는 Standard Wiener Process(표준 브라운 운동), $f(x,t): \mathbb{R}^{d} \to \mathbb{R}^{d}$ 는 $x(t)$ 의 드리프트(Drift) 계수, $g(t): \mathbb{R} \to \mathbb{R}$ 는 확산(Diffusion) 계수이다.
+
+뭐 카트라이더마냥 드리프트 어쩌구 뭐 솰라솰라 브라운 박사 저쩌구 거시기 뭔 소린지 도통 모르겠는데, SDE란 뭔지, 자세한건 [여기를 확인하자..](#general-stochastic-differential-equations)
+
+아무튼 그래서 연속형 $t$ 에 대해서 Diffusion Process를 위와 같은 형태로 정의했다는 것이다. 각 계수들을 어떻게 정의할지는 다양한 방법이 있는데, 논문에서 어떻게 정의했는지 예시들을 후에 알려준다고 하니 손가락 빨면서 일단 넘어가자.
+
+### Generating Samples by Reversing The SDE
+
+이제 Diffusion Process의 반대인 $x(T) \to x(0)$ 의 샘플링 과정도 연속형 $t$ 에 대해서 정의해야 하는데, Anderson 형님의 Reverse-time diffusion equation models 논문에서, Diffusion Process의 반대 과정도 Diffusion Process이며, 기존 Diffusion Process와 마찬가지로 반대로 거슬러가는 $t$ 에 대해 다음과 같이 SDE로 나타낼 수 있다는 것을 증명하셨다.
+
+$$
+dx = [f(x,t) - g(t)^{2}\nabla_{x}\log p_{t}(x)]dt + g(t)d\bar{w}
+$$
+
+여기서 $\bar{w}$ 는 마찬가지로 Standard Wiener process($T \to 0$ 에서의 표준 브라운 운동)이고, $dt$ 는 아~주 작은 음의 시간 변화량이다.  
+
+기존 Diffusion Process에서 $f(x,t)$ 와 $g(t)$ 는 이미 정의됐고.. 결국 $\nabla\_{x}\log p\_{t}(x)$ 만 알고 있으면, 위 식을 통한 Reverse Diffusion Process로 샘플링을 할 수 있다는 것이다. 
+
+### Estimating Scores For The SDE
+
+그럼 샘플링을 위해서 $\nabla\_{x}\log p\_{t}(x)$ 을 추정할 모델 $s_{\theta}(x,t)$ 을 학습해야 하는데, 앞서 살펴본 SMLD 와 DDPM 의 각 목적함수를 최적화하는 최적의 파라미터 $\theta^{\star}$ 를 다음과 같이 일반화하여 나타낸다.
+
+$$
+\theta^{\star} = \underset{\theta}{\arg\min}\, \mathbb{E}_{t}\left[\lambda(t)\mathbb{E}_{x(0)}\mathbb{E}_{x(t)|x(0)}\left[ \|s_{\theta}(x,t) - \nabla_{x(t)} \log p_{0t}(x(t)|x(0)) \|_{2}^{2} \right]\right]
+$$
+
+이때 $\lambda: [0,T] \to \mathbb{R}^{+}$ 인 가중치 함수이고, $t \sim \mathcal{U}(0,T)$ 로 정의된다. Denoising Score Matching 의 형태로 정의된 것을 볼 수 있는데, 다른 Score Matching 방식도 상관없다고 한다.
+
+위 식에 대한 최적해 $\theta^{\star}$ 에 대해서, 충분한 데이터와 시간만 있으면,  모든 $t$ 와 $x$ 에 대해 모델 $s_{\theta^{\star}}(x,t) = \nabla\_{x}\log p\_{t}(x)$ 를 만족하며, SMLD와 DDPM 에서 살펴봤듯이, $\mathbb{E}[\|\|\nabla\_{x(t)} \log p\_{0t}(x(t)\|x(0)) \|\|_{2}^{2}] \propto \lambda(t)^{-1}$ 이 되도록 $\lambda(t)$ 를 정의하여 연속적인 $t$ 에 따라 일관된 비중으로 모델이 학습하도록 한다. 
+
+아무튼 위 식을 통해 모델을 학습하기 위해선, 전이 커널 $p\_{0t}(x(t)\|x(0))$ 의 값을 알아야 할텐데, Diffusion Process 에서의 $f(x,t)$ 가 아핀(Affine) 함수인 경우, 모든 전이 커널은 가우시안 분포가 된다. 따라서 DDPM의 논문에서 봤던 것처럼, $x(t)$ 를 샘플링하는데 Closed-Form 으로 할 수 있다는 것이다.  
+
+$f(x,t)$ 가 아핀 함수가 아닌, 일반적인 경우엔 뭐.. Kolmogorov's forward equation 이란걸 사용한다는데... 논문에선 그냥 앞서 본 Reverse Diffusion Process 대로 $p\_{0t}(x(t)\|x(0))$ 를 샘플링하고, 위 식을 Sliced Score Matching 의 형태로 바꿔서 학습을 진행한다고 한다. 
+
+### VE, VP, sub-VP SEDs
+
+#### VE SDE
+
+앞선 SDEs 에 기반해서, SMLD와 DDPM는 이산화된 SDE로 생각될 수 있다. 
+
+SMLD 부터 살펴보면, 총 $N$ 개의 노이즈 레벨에 대해서 각 커널 $p\_{\sigma\_{i}}(x \| x\_{0})$ 은 다음 Markov Chain 의 $x_{i}$ 의 분포와 일치한다.
+
+$$
+\begin{align}
+    x_{i} &\sim p_{\sigma_{i}}(x | x_{0}) = \mathcal{N}(x_{i}; x_{0}, \sigma_{i}^{2}\mathbf{I}) \\
+    x_{i} - x_{i-1} &\sim \mathcal{N}(x_{i} - x_{i-1}; x_{0} - x_{0}, (\sigma_{i}^{2} - \sigma_{i-1}^{2})\mathbf{I})\\
+    &= \mathcal{N}(x_{i} - x_{i-1}; 0, (\sigma_{i}^{2} - \sigma_{i-1}^{2})\mathbf{I}) \\
+    x_{i} - x_{i-1} &= \sqrt{\sigma_{i}^{2} - \sigma_{i-1}^{2}}z_{i-1} \\
+    \therefore x_{i} &= x_{i-1} + \sqrt{\sigma_{i}^{2} - \sigma_{i-1}^{2}}z_{i-1} \quad i = 1,...,N, \quad z_{i-1} \sim \mathcal{N}(0, \mathbf{I})
+\end{align}
+$$
+
+이제 이를 우리가 앞서 살펴본 SDE의 형태로 나타내기 위해, 이산형 노이즈 레벨 $i$ 가 아닌, 연속형 레벨 $t \in [0,1]$ 로 바꿔서 나타내보자. 그럼 다음과 같다. 
+
+$$
+\begin{align}
+    x(t + \nabla t) - x(t) &= \sqrt{\sigma^{2}(t + \nabla t) - \sigma^{2}(t)} z(t) \\
+    \frac{dx}{dt} \Delta t &= \sqrt{\frac{d[\sigma^{2}(t)]}{dt}\Delta t} \frac{z(t)}{\sqrt{\Delta t}} \\
+    \therefore dx &= \sqrt{\frac{d[\sigma^{2}(t)]}{dt}} dw \quad (z(t) \approx \frac{\Delta w}{\sqrt{\Delta t}},\Delta w \sim \mathcal{N}(0, \Delta t \mathbf{I}))
+\end{align}
+$$
+
+$f(x,t) = 0$, $g(t) = \sqrt{\frac{d[\sigma^{2}(t)]}{dt}}$ 로 SMLD 에서 정의된다.  
+
+따라서 $t \to \infty$ 일 때 $\sigma{t}$ 의 값도 덩달아 커지므로, 이를 **Variance Exploding (VE) SDE** 라고 한다. 
+
+#### VP SDE
+
+DDMP의 각 커널 $\set{p\_{\alpha\_{i}}(x \| x\_{0})}\_{i=1}^{N}$ 에 대해서도 살펴보자. 
+
+$$
+\begin{align}
+    x_{i} &= \sqrt{1-\beta_{i}}x_{i-1} + \sqrt{\beta_{i}}z_{i-1} \quad i=1,...,N 
+\end{align}
+$$
+
+마찬가지로 연속형 레벨 $t \in [0,1]$ 로 바꿔서 나타내면 다음과 같다. 
+
+$$
+\begin{align}
+    x_{i} &= \sqrt{1-\beta_{i}}x_{i-1} + \sqrt{\beta_{i}}z_{i-1} \\
+    x_{i} &= \left(1 - \frac{\beta_{i}}{2}\right)x_{i-1} + \sqrt{\beta_{i}}z_{i-1} \quad \left(\sqrt{1 - x} \approx 1 - \frac{x}{2}\right) \\
+    dx &= - \frac{\beta(t)\Delta t}{2}x(t) + \sqrt{\beta(t)\Delta t}z(t) \\
+    dx &= - \frac{1}{2}\beta(t)x(t)\Delta t + \sqrt{\beta(t)} dw \quad (dw \approx \sqrt{\Delta t}z(t)) \\
+    \therefore dx &= - \frac{1}{2}\beta(t)xdt + \sqrt{\beta(t)} dw 
+\end{align}
+$$
+
+$f(x,t) = - \frac{1}{2}\beta(t)x$, $g(t) = \sqrt{\beta(t)}$ 로 DDPM 에서 저렇게 정의된다.  
+
+이전 블로그 글에서도 언급했지만, 이전 $\text{Var}(x_{i-1}) = 1$ 인 경우에, $(\sqrt{1-\beta_{i}})^{2}\text{Var}(x_{i-1}) + (\sqrt{\beta_{i}})^{2}\text{Var}(z_{i-1}) = 1 \quad (\text{Var}(x_{0}) = 1)$ 이므로, 위 식은 **Variance Preserving (VP) SDE** 라고 한다. 
+
+#### sub-VP SDE
+
+논문에서는 이러한 VP SDE 를 조금 변형하여, 마찬가지로 분산의 크기를 제한한 새로운 형태의 SDE 를 소개하는데, 다음 식을 **sub-VP SDE** 라고 한다. 
+
+$$
+dx = - \frac{1}{2}\beta(t)xdt + \sqrt{\beta(t)(1 - \exp(-2 \int_{0}^{t} \beta(s)ds))}dw
+$$
+
+아무튼 소개한 VE, VP, sub-VP SDE 모두 드리프트 계수는 $f(x,t)$ 가 아핀 함수로 정의되는데, 따라서 모든 전이 커널 $p\_{0t}(x(t)\|x(0))$ 은 모두 가우시안 분포로 정의되어, Closed-forms 으로 계산할 수 있다. 
+
+## Sampling
+
+그래서 앞에서 
+
+### General-purpose Numerical SDE Solvers
+
+앞서서 연속형의 $t$ 에 대해서 $dx = \cdots$ 형식으로 SDE 들을 뭐.. 정의내렸는데, 아무튼 이를 컴퓨터에서 샘플링을 진행하기 위해서는 일단 SDE 들을 다시 이산형으로 쪼개야한다... 이렇게 스텝들로 쪼개서 근사치를 구하는 걸 **Numerical Solver** 라고 한다.  
+
+위에서 본 DDPM 에서의 샘플링 과정 식 그거... 그거를 Ancestral Sampling 이라고 하는데, 아무튼 그거도 Numerical Solver 의 한 종류이다. 이거 말고도 뭐.. Euler-Maruyama, Stochastic Runge-Kutta 등등이 있다고 한다. 
+
+뭐가 많아도 드럽게 많다. 아무튼 뭐가 많은데.. 결국 중요한 점은 모든 SDE에 통용되는 것이 아니라, 각 SDE 식 별로 달라서 형태에 맞게 유도해야 한다는 것이다..
+
+그래서 논문에서는 간단하게, 원래 방향의 Diffusion Process 에서 쪼갠 방식 그대로 Reverse Diffusion Process 에서도 동일하게 쪼개는 방식을 소개하는데, 이 방식을 **Reverse Diffusion Samplers** 라고 한다. 
+
+### Predictor-Corrector (PC) Samplers
+
+요거는 앞서 설명한 Numerical Solvers 들을 통해 다음 스텝을 계산하고, 이 계산된 값을, $s\_{\theta^{\star}}(x,t) \approx \nabla\_{x} \log p\_{t}(x)$ 를 이용하여 Score0-based MCMC 를 통해 교정하는 과정을 반복하는 과정인데, 이를 **Predictor-Corrector (PC) Sampler** 라고 한다.  
+
+앞서 살펴본 SMLD는 Corrector (Langevin Dynamics)만 사용한 경우이고, DDPM은 Predictor (Ancestral Sampling)만 사용한 경우의 PC Sampler 의 한 경우로 볼 수 있다. 
+
+### Probability ODE
+
+지금까지 알아본 SDE 는... 결국 $dw$ 항의 랜덤 샘플링을 통해 이동 궤적이 음... 무작위의 지그재그? 형태에 가까웠었다. 근데!!! 논문의 저자가 보니까 무작위 샘플링이 없는, 즉 $dw$ 항이 없는 Ordinary Differential Equations, ODEs 가 사실 같은 확률 분포 궤적을 그린다는 사실을 알아냈다. 이 식은 다음과 같다. 
+
+$$
+dx = \left[f(x,t) - \frac{1}{2}g(t)\nabla_{x}\log p_{t}(x)\right]dt
+$$
+
+식을 보면 확률적 샘플링 과정이 아에 사라지고, 결정론적으로 샘플링을 할 수 있게 되는데, 이를 **Probability Flow ODE** 라고 한다. 
+
+이를 통해서, DDPM 에서의 ELBO를 통한 기존 우도함수의 근사치를 손실함수로 쓰는게 아닌, 정확한 손실함수를 계산할 수 있게 되는 것이다.  
+
+또한 ODE는 결정론적이므로, 입력 데이터 $x(0)$ 을 $x(T)$ 로 인코딩하고, 다시 $x(0)$ 으로 디코딩하면 정확히 입력 데이터와 같은 형태가 나온다. 
+
+
+
+
+## 찌라시시
+
+![살려줘](https://i.imgur.com/izzuaSg.gif){: width="400"}
+
+무량공처로 지금 뇌가 엉엉방방하다. 그냥 글 흐름이 개념 개념 개념개념개념개념개념 연속인데, 이게 무량공처다.  
+일단 초안으로 놔두고.. 본문 계속 다듬고 추가설명 부분도 아직 비워뒀는데, 내일 끝내겠다. 
+...나중에 다시 살펴볼 때 논문 안보고 이것만 보고 다 알 수 있게 작성하려다 보니.. 뭔가 포스터마다 겁나게 내용이 긴거 같은데, 미안하다. 글도 쓰다보면 언젠간 나아지겠지.
+
+## 추가 설명 
+
+### General Stochastic Differential Equations
+
+
 
 
 
