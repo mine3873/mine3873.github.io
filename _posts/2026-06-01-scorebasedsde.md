@@ -1,18 +1,18 @@
 ---
-title: "Score-based Generatvie Modeling Through Stochastic Differential Equations"
+title: "Score-based Generative Modeling Through Stochastic Differential Equations"
 date: 2026-06-01 15:27:00 +0900
 categories: [DL, Generative-model]
-tags: [dl, generative-model, score-based,] 
+tags: [dl, generative-model, score-based, diffusion] 
 math: true
 mermaid: true
 ---
 
-# Score-based Generatvie Modeling Through Stochastic Differential Equations
+# Score-based Generative Modeling Through Stochastic Differential Equations
 
-> [Score-based Generatvie Modeling Through Stochastic Differential Equations](https://arxiv.org/pdf/2011.13456)
+> [Score-based Generative Modeling Through Stochastic Differential Equations](https://arxiv.org/pdf/2011.13456)
 {: .prompt-info}
 
-## Indroduction
+## Introduction
 
 [DDPM](https://mine3873.github.io/posts/difussion/) 과 [NCSN](https://mine3873.github.io/posts/scorebased/) 두 논문을 이전에 살펴봤는데, 두 방식 모두 기존 데이터에 노이즈를 점차 섞어가며, 이 과정을 그대로 역재생하듯 노이즈를 제거해가며 데이터 분포를 학습한다. 
 
@@ -34,7 +34,7 @@ mermaid: true
 
 우리가 전에 살펴본 Noise Conditional Score Networks, NCSN은 Denoising Score Matching with Langevin Dynamics, SMLD 프레임워크를 적용한 신경망으로, 여기선 SMLD를 기준으로 설명한다. 
 
-일단 짧게 복습하면, 이 논문에선 약간의 표기의 차이가 있지만 노이즈를 $p\_{\sigma}(\tilde{x}\|x) = \mathcal{N}(\tilde{x}; x, \sigma^{2}\mathbf{I})$ 로, 노이즈가 섞인 데이터의 분포를 $p\_{\sigma}(\tilde{x}) = \int p\_{\text{data}}(x)p\_{\sigma}(\tilde{x}\|x)\,dz$ 로 나타낸다. 
+일단 짧게 복습하면, 이 논문에선 약간의 표기의 차이가 있지만 노이즈를 $p\_{\sigma}(\tilde{x}\|x) = \mathcal{N}(\tilde{x}; x, \sigma^{2}\mathbf{I})$ 로, 노이즈가 섞인 데이터의 분포를 $p\_{\sigma}(\tilde{x}) = \int p\_{\text{data}}(x)p\_{\sigma}(\tilde{x}\|x)\,dx$ 로 나타낸다. 
 
 각 노이즈 레벨 $\set{\sigma\_{i}}\_{i=1}^{N} \quad (\sigma\_{1} < \sigma\_{2} < \cdots < \sigma_{N})$ 에 대해서, 모델 $s\_{\theta}$ 의 최적 파라미터 $\theta^{\star}$ 는 다음과 같다.
 
@@ -63,7 +63,7 @@ $$
 > 자세하게는 [Denoising Diffusion Probabilistic Models](https://mine3873.github.io/posts/difussion/) 를 확인하자..
 {: .prompt-info}
 
-DDPM 도 마찬가지로 조금 표기의 차이가 있지만, SMLD와 비슷하게 노이즈가 섞인 데이터의 분포를 $p\_{\alpha\_{i}}(\tilde{x}) = \int p\_{\text{data}}(x)p\_{\alpha\_{i}}(\tilde{x}\|x)\,dz$ 로 나타낸다. 여기서 DDPM 의 Markov-chain의 각 과정이 $p(x\_{i}\|x\_{i-1}) = \mathcal{N}(x\_{i}; \sqrt{1 - \beta_{i}}x\_{i-1}, \beta\_{i}\mathbf{I})$ 로 정의되고, $x\_{0} \sim p\_{\text{data}}(x)$ 에서 Closed-form으로 $x\_{t} \sim p\_{\alpha\_{i}}(x\_{i}\|x\_{0}) = \mathcal{N}(x\_{i}; \sqrt{\alpha\_{i}}x\_{0}, (1-\alpha\_{i})\mathbf{I})$ 으로 정의된다. 이때 $\alpha\_{i} = \prod\_{j=1}^{i} (1-\beta\_{j})$ 이다. 
+DDPM 도 마찬가지로 조금 표기의 차이가 있지만, SMLD와 비슷하게 노이즈가 섞인 데이터의 분포를 $p\_{\alpha\_{i}}(\tilde{x}) = \int p\_{\text{data}}(x)p\_{\alpha\_{i}}(\tilde{x}\|x)\,dx$ 로 나타낸다. 여기서 DDPM 의 Markov-chain의 각 과정이 $p(x\_{i}\|x\_{i-1}) = \mathcal{N}(x\_{i}; \sqrt{1 - \beta_{i}}x\_{i-1}, \beta\_{i}\mathbf{I})$ 로 정의되고, $x\_{0} \sim p\_{\text{data}}(x)$ 에서 Closed-form으로 $x\_{t} \sim p\_{\alpha\_{i}}(x\_{i}\|x\_{0}) = \mathcal{N}(x\_{i}; \sqrt{\alpha\_{i}}x\_{0}, (1-\alpha\_{i})\mathbf{I})$ 으로 정의된다. 이때 $\alpha\_{i} = \prod\_{j=1}^{i} (1-\beta\_{j})$ 이다. 
 
 이제 다음과 같이 서커스를 해보자.
 
@@ -266,7 +266,7 @@ $$
 \frac{\Sigma_{\text{VP}}(t)}{dt} = \beta(t)(\mathbf{I} - \Sigma_{\text{VP}}(t))
 $$
 
-이때 $\Sigma_{\text{VP}}(t) = \text{Cov}(x(t)) \quad (t \in [0, 1])$ 으로, $\set{x(t)}_{t=0}^{1}$ 의 공분산, 즉, 흩어짐 정도를 나타낸다.. 위 식을 풀어보면, 다음과 같다. 자세한 풀이과정은 
+이때 $\Sigma_{\text{VP}}(t) = \text{Cov}(x(t)) \quad (t \in [0, 1])$ 으로, $\set{x(t)}_{t=0}^{1}$ 의 공분산, 즉, 흩어짐 정도를 나타낸다.. 위 식을 풀어보면, 다음과 같다. 자세한 풀이과정은 [여기를 확인하자..](#vp-공분산-부분-계산-과정)
 
 $$
 \Sigma_{\text{VP}}(t) = \mathbf{I} + \exp\left(\int_{0}^{t} - \beta(s)\,ds \right)(\Sigma_{\text{VP}}(0) - \mathbf{I})
@@ -400,7 +400,7 @@ $$
     &=  - \sum_{i=1}^{d} \frac{d}{dx_{i}}\left[f_{i}(x,t)p_{t}(x) - \frac{1}{2}\left[  \nabla \cdot [G(x,t)G(x,t)^{T}] + G(x,t)G(x,t)^{T}\nabla_{x} \log p_{t}(x)\right]p_{t}(x)  \right] \\\\
     \frac{dp_{t}(x)}{dt} &= - \sum_{i=1}^{d} \frac{d}{dx_{i}}[\tilde{f}_{i}(x,t)p_{t}(x)]\\ \\
     \therefore \tilde{f}(x,t) &= f(x,t) - \frac{1}{2} \nabla \cdot [G(x,t)G(x,t)^{T}] - \frac{1}{2} G(x,t)G(x,t)^{T}\nabla_{x} \log p_{t}(x) \\
-    \therefore dx &= \tilde{f}(x,t)p_{t}(x)
+    \therefore dx &= \tilde{f}(x,t)d_{t}
 \end{align}
 $$
 
@@ -464,7 +464,7 @@ $$
 
 $$
 \begin{align}
-    dx &= f(x,t)dt + G(t)dw
+    dx &= f(x,t)dt + G(t)dw \\
     &\to \\
     x_{i+1} &= x_{i} + f_{i}(x_{i}) + G_{i}z_{i} \quad i = 0, 1, ..., N-1
 \end{align}

@@ -138,9 +138,11 @@ $\epsilon > 0$, $T < \infty$ 의 경우엔 그만큼 오차가 심해질텐데, 
 
 이 때문에 2가지 문제가 생기는데, 먼저 Score $\nabla_{x} \log p_{\text{data}}(x)$ 를 정의할 수 없다는 것이다. 음.. 그러니까 이 거대한 우주에서 지구의 빛(Score, ~~그냥 흐린 눈으로 지구 빛이라고 하자.~~) 을 추적하여 지구 ($p_{\text{data}}$) 를 찾아야하는데, 우주는 겁~나게 넓으니까 저~ 먼 곳에서는 이 지구 빛을 볼 수 조차 없다. Score 값이 안보이는거다. 아무튼 내가 이해한 바는 이런데.. 계속 짱구 돌려보다가 나중에 수정하겠다..
 
-그러니까.. $\nabla_{x} \log p_{\text{data}}(x) = \frac{\nabla_{x} p_{\text{data}}}{p_{\text{data}}}$ 로 정의되는데, 이 매니폴드와 멀리 떨어지면 $p_{\text{data}} \approx 0$ 이 되어서, $\frac{\nabla_{x} p_{\text{data}}}{p_{\text{data}}}$ 이게 정의가 되지 않는 것이다.  
+짱구를 굴려서 추가해보자면.. 데이터가 3차원 공간 속의 선이나 면과 같은 (2차원 매니폴드) 에만 존재한다면, 이를 벗어난 공간에서는 데이터의 확률 밀도가 0이 된다. $\log 0$ 이 정의되지 않으니 당연히 그 미분값도 정의가 안될테고...  
 
-..아무튼 다른 문제는 앞서 살펴본 우리의 목적함수에 대해서, $p_{\text{data}}$ 의 Support 가 전체 공간일 때만 일관된 Score 값을 제공하며, 저차원 매니폴드에 있다면 그렇지 않다는 것이다. 
+그러니까 다시 말하면, $\nabla_{x} \log p_{\text{data}}(x) = \frac{\nabla_{x} p_{\text{data}}}{p_{\text{data}}}$ 로 정의되는데, 이 매니폴드와 멀리 떨어지면 $p_{\text{data}} \approx 0$ 이 되어서, $\frac{\nabla_{x} p_{\text{data}}}{p_{\text{data}}}$ 이게 정의가 되지 않는 것이다.  
+
+...또 다른 문제는 앞서 살펴본 우리의 목적함수에 대해서, $p_{\text{data}}$ 의 Support 가 전체 공간일 때만 일관된 Score 값을 제공하며, 저차원 매니폴드에 있다면 그렇지 않다는 것이다. 
 
 여기서 분포의 Support 는, $p(x) > 0$, 즉, 데이터가 존재하는 영역을 말한다. 여기서 매니폴드는 이러한 Support 가 가지는 저차원 기하학 구조를 말한다... ~~아 뭔가 딱 감올 것 같은데 거시기하다. 나중에 제대로 다뤄보겠다..~~
 
@@ -250,6 +252,8 @@ $$
 이때 $z\_{t} \sim \mathcal{N}(0, \mathbf{I})$이고, 기존 Langevin Dynamics의 학습률이었던 $\epsilon$ 이 $\alpha_{i}$ 로 바뀌었는데, 이 새로운 학습률은 $\alpha_{i} = \frac{\epsilon \cdot \sigma_{i}^{2}}{\sigma_{L}^{2}}$ 로 정의된다. 즉, $\sigma_{1}$ 레벨에서의 초기 학습률이 매우 크지만, 노이즈 레벨이 낮아질수록 학습률이 작아지며, 최종 $\sigma\_{L}$ 레벨에선 학습률이 $\epsilon$ 이 되어 정교해진다.
 
 아무튼 이렇게 초깃값 $\tilde{x}\_{0}$ 에서 $\tilde{x}\_{T}$ 까지, $\sigma\_{1}$ 레벨에서 $T$ 번동안 Langevin dynamics 를 진행하여 도착한 최종 위치가 $\tilde{x}\_{T}$ 가  다음 $\sigma\_{2}$ 레벨에서의 초기 위치 $\tilde{x}\_{0}$ 가 되고, 학습률을 다시 정의하여 같은 과정을 반복한다. 이렇게 반복하고 반복해서, $\sigma\_{L}$ 레벨에서의 $\tilde{x}\_{T}$ 가 Annealed Langevin dynamics 알고리즘이 생성한 최종 샘플이 된다. 즉, $q\_{\sigma\_{L}}(\tilde{x}\_{T}) \approx p\_{\text{data}}(\tilde{x})$ 이 된다.  
+
+그러니까 처음에 큰 노이즈를 줘서 데이터들이 어디에 모여있는지 대략적으로 찾고, 노이즈를 점차 줄여가며 좀 더 세세하게 찾는 과정인 것이다.  
 
 이렇게 큰 노이즈 레벨 부터 시작해서 점차 노이즈 레벨을 낮춰가며 Langevin dynamics 을 수행하면, 모델이 추정하는 Score 값이 더 정확해지고, 앞서 두 최빈값의 가중치를 반영하는걸 더 빨리 수행할 수 있는데, $q\_{\sigma\_{i-1}}(x)$ 의 High density regions 에서 샘플링될 가능성이 크다는건, $q\_{\sigma\_{i}}(x)$ 에서도 High density regions 에서 샘플링될 가능성이 크다는 것과 같다. 왜냐하면 $q\_{\sigma\_{i-1}}(x) \approx q\_{\sigma\_{i}}(x)$ 와 같이 두 분포는 아주 미세한 가우시안 노이즈의 차이만 있기 때문이다. $q\_{\sigma\_{i-1}}(x)$ 가 High density regions 에 있다는건 그만큼 정확한 Score 값을 반영하여 Langevin dynamics 을 통해 정확한 $\tilde{x}_{T}$ 를 찾는다는 것이고, 이는 $q\_{\sigma\_{i}}(x)$ 의 초깃값으로서 알맞다는 것이다. 
 
