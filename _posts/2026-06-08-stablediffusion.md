@@ -107,7 +107,7 @@ $$
 #### GAN Loss
 
 $$
-L_{\text{GAN}} = \log \mathcal{D}(x) + \log ( 1 - \mathcal{D}(\hat{x}))
+L_{\text{GAN}} = \log D(x) + \log ( 1 - D(\hat{x}))
 $$
 
 이건 뭐... 전에 다뤘으니 패스하겠다. 절대 귀찮은 것이 아니다.  
@@ -141,7 +141,7 @@ $$
 그냥 VAE랑 똑같다. 인코더에서 평균과 분산을 출력한 후, $z = \mu + \sigma \odot \epsilon$ 로 재파라미터화 해서.. 진행하는거다. 아무튼 이러한 $\mu, \sigma$ 를 가지고 표준 정규 분포와 가까워지도록 하는데, 그러면 Loss는 다음과 같다.
 
 $$
-L_{\text{reg}}(x;E) = -D_{KL}((\mathcal{E}(z|x) \| \mathcal{N}(z;0,\mathbf{I})) = \frac{1}{2}\sum_{j=1}^{J}(1 + \log(\sigma_{j}^{2}) - \mu_{j}^{2} - \sigma_{j}^{2})
+L_{\text{reg}}(x;\mathcal{E}) = -D_{KL}((\mathcal{E}(z|x) \| \mathcal{N}(z;0,\mathbf{I}))) = \frac{1}{2}\sum_{j=1}^{J}(1 + \log(\sigma_{j}^{2}) - \mu_{j}^{2} - \sigma_{j}^{2})
 $$
 
 자세한건 위 블로그 글을 보자...  
